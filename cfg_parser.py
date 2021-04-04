@@ -4,17 +4,31 @@ from cfg_classes import *
 from math import inf
 
 CONTEXT_WORDS = ['EXCEPT', 'ANY', 'IGNORE', 'IGNORECASE']
+SCANNER_WORDS = ['COMPILER', 'CHARACTERS',
+                 'KEYWORDS', 'TOKENS', 'END', 'PRODUCTIONS']
 
 
 class CFG():
     def __init__(self, filepath):
         self.filepath = filepath
         self.file = None
-        self.file_lines = list()
+
         self.compiler_name = None
         self.characters = list()
         self.keywords = list()
         self.tokens = list()
+
+        self.file_lines = self.ReadFile()
+        self.curr_line = None
+        self.Next()
+
+        self.ReadLines()
+
+    def Next(self):
+        try:
+            self.curr_line = next(self.file_lines)
+        except StopIteration:
+            self.curr_line = None
 
     def ReadFile(self):
         try:
@@ -23,44 +37,85 @@ class CFG():
             raise Exception('File not found!')
         finally:
             lines = self.file.readlines()
+            temp = list()
             for line in lines:
                 if line != '\n':
                     line = line.strip('\r\t\n')
+                    line = line.strip()
                     line = line.split(' ')
                     line[:] = [i for i in line if i != '' or i]
-                    self.file_lines.append(line)
+                    temp.append(line)
 
-        return self.file_lines
+        return iter(temp)
 
     def ReadLines(self):
-        parsing_attr = None
+        while self.curr_line != None:
+            # Check if we got any important word in the lines
+            if any(word in SCANNER_WORDS for word in self.curr_line):
 
-        for line in self.file_lines:
+                if 'COMPILER' in self.curr_line:
+                    self.compiler_name = self.curr_line[self.curr_line.index(
+                        'COMPILER')+1]
+                    self.Next()
 
-            if 'COMPILER' in line:
-                self.compiler_name = line[line.index('COMPILER')+1]
+                elif 'CHARACTERS' in self.curr_line:
+                    self.Next()
+                    self.ReadSection('CHARACTERS')
 
-            elif 'CHARACTERS' in line and self.compiler_name != None:
-                parsing_attr = 'CHARACTERS'
-                continue
+                elif 'KEYWORDS' in self.curr_line:
+                    self.Next()
+                    self.ReadSection('KEYWORDS')
 
-            elif 'KEYWORDS' in line and self.compiler_name != None:
-                if not '=' in line:
-                    parsing_attr = 'KEYWORDS'
-                    continue
+                elif 'TOKENS' in self.curr_line:
+                    self.Next()
+                    self.ReadSection('TOKENS')
 
-            elif 'TOKENS' in line and self.compiler_name != None:
-                parsing_attr = 'TOKENS'
-                continue
+                elif 'PRODUCTIONS' in self.curr_line:
+                    self.Next()
 
-            elif 'PRODUCTIONS' in line and self.compiler_name != None:
-                parsing_attr = None
+                elif 'END' in self.curr_line:
+                    print('END')
+                    self.Next()
 
-            elif 'END' in line:
-                break
+            elif '(.' in self.curr_line:
+                self.ReadComment()
+                self.Next()
 
-            if parsing_attr != None:
-                self.GetKeyValue(' '.join(line), parsing_attr)
+            else:
+                self.Next()
+
+    def ReadSection(self, section):
+        joined_set = ''
+        prev_set = ''
+        while not any(word in SCANNER_WORDS for word in self.curr_line):
+            curr_set = ' '.join(self.curr_line)
+            print(curr_set)
+
+            # Is there a comment?
+            if '(.' in curr_set:
+                self.ReadComment()
+
+            # Does the set contains both = and .
+            if '=' in curr_set and '.' == curr_set[-1]:
+                curr_set = curr_set[:-1]
+                self.GetKeyValue(curr_set, section)
+                self.Next()
+
+            # If it doesn't contains a ., it's probably part of the previous set
+            elif not '.' == curr_set[-1]:
+                joined_set += curr_set
+                self.Next()
+
+            # If there's a ., it's probably the end of a previously joined set
+            elif '.' == curr_set[-1]:
+                joined_set += curr_set
+                joined_set = joined_set[:-1]
+                self.GetKeyValue(joined_set, section)
+                self.Next()
+
+    def ReadComment(self):
+        while not '.)' in self.curr_line:
+            self.Next()
 
     def GetKeyValue(self, line, attr):
         if attr == 'CHARACTERS':
@@ -71,11 +126,17 @@ class CFG():
             print('pending')
 
     def KeywordDecl(self, line):
-        key, value = line.split('=')
-        key = key.strip()
+        ident, value = line.split('=')
+        ident = ident.strip()
         value = value.strip().replace('.', '')
 
-        self.keywords.append({key: value})
+        # Create ident object
+        keyword = Keyword(ident, value)
+
+        # Check if ident exists, else append it to list
+        if IdentExists(ident, self.keywords):
+            raise Exception('Keyword declared twice!')
+        self.keywords.append(keyword)
 
     def SetDecl(self, line):
 
@@ -124,13 +185,17 @@ class CFG():
         self.characters.append(Character(key, value))
 
     def Char(self, string, item_set):
-        # Check if it has a . or a CHR
-        if '.' not in string and 'CHR' not in string:
-            if '"' not in string:
-                # Doesn't have double quotes, check if ident exists
-                if not IdentExists(string, item_set):
-                    raise Exception(
-                        f'In CHARACTERS, char is not defined correctly: {string} is not defined')
+
+        # Check if it has a . or a CHR or even "
+        char_vals = ['.', 'CHR', '"', '\'']
+        if not any(char in char_vals for char in string):
+            # Check if ident exists
+            if not IdentExists(string, item_set):
+                raise Exception(
+                    f'In CHARACTERS, char is not defined correctly: indent "{string}" not defined')
+            return string
+
+        elif '"' in string:
             return string
 
         temp = list()
@@ -140,11 +205,10 @@ class CFG():
             # Check if there's a dot in some value
             if '.' in char or not char:
                 raise Exception(
-                    'In CHARACTERS, char is not defined correctly')
+                    'In CHARACTERS, a set is not defined correctly')
 
             # Is it a CHR-defined value?
             if 'CHR' in char:
-
                 # Check for missing or extra parenthesis
                 par_count = char.count('(') + char.count(')')
                 if not par_count == 2:
@@ -164,8 +228,14 @@ class CFG():
 
         return temp
 
+    def __repr__(self):
+        return f'''
+    Compiler: {self.compiler_name}
+        Characters: {self.characters}
+        Keywords: {self.keywords}
+        Tokens: {self.tokens}
+    '''
+
 
 cfg = CFG('input/grammar.cfg')
-cfg.ReadFile()
-cfg.ReadLines()
-pprint(cfg.characters)
+print(cfg)

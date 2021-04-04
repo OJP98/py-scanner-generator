@@ -3,5 +3,8 @@ def GetTextInsideParenthesis(string):
 
 
 def IdentExists(string, char_set):
-    ident = next(filter(lambda x: x.ident == string, char_set))
-    return True if ident != None else False
+    try:
+        next(filter(lambda x: x.ident == string, char_set))
+        return True
+    except StopIteration:
+        return False
