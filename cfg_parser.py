@@ -1,4 +1,4 @@
-from utils import GetTextInsideParenthesis, IdentExists
+from utils import GetTextInsideParenthesis, IdentExists, GetElementType
 from pprint import pprint
 from cfg_classes import *
 from math import inf
@@ -86,7 +86,6 @@ class CFG():
 
     def ReadSection(self, section):
         joined_set = ''
-        prev_set = ''
         while not any(word in SCANNER_WORDS for word in self.curr_line):
             curr_set = ' '.join(self.curr_line)
             print(curr_set)
@@ -129,6 +128,7 @@ class CFG():
         ident, value = line.split('=')
         ident = ident.strip()
         value = value.strip().replace('.', '')
+        value = Variable(VarType.STRING, value)
 
         # Create ident object
         keyword = Keyword(ident, value)
@@ -153,13 +153,13 @@ class CFG():
                 if plus_index < minus_index:
                     char = self.Char(string[:plus_index], self.characters)
                     temp.append(char)
-                    temp.append('+')
+                    temp.append(Variable(VarType.UNION, '+'))
                     string = string[plus_index+1:]
 
                 elif minus_index < plus_index:
                     char = self.Char(string[:minus_index], self.characters)
                     temp.append(char)
-                    temp.append('-')
+                    temp.append(Variable(VarType.DIFFERENCE, '-'))
                     string = string[minus_index+1:]
 
                 else:
@@ -171,7 +171,9 @@ class CFG():
 
         def Set(value):
             value = value.replace(' ', '')
-            bset = [value]
+
+            if not '+' in value or not '-' in value:
+                return GetElementType(value, self.characters)
 
             if any(i in '+-' for i in value):
                 bset = BasicSet(value)
@@ -193,10 +195,11 @@ class CFG():
             if not IdentExists(string, item_set):
                 raise Exception(
                     f'In CHARACTERS, char is not defined correctly: indent "{string}" not defined')
-            return string
+
+            return GetElementType(string, self.characters)
 
         elif '"' in string:
-            return string
+            return GetElementType(string, self.characters)
 
         temp = list()
         string = string.split('..')
@@ -221,20 +224,26 @@ class CFG():
                     raise Exception(
                         'In CHARACTERS, char is not defined correctly: non-digit CHR value')
 
-            temp.append(char)
+            temp.append(GetElementType(char, self.characters))
 
             if len(string) > 1 and char != string[-1]:
-                temp.append('..')
+                temp.append(Variable(VarType.RANGE, '..'))
 
-        return temp
+        return temp if len(temp) > 1 else temp[0]
 
     def __repr__(self):
         return f'''
-    Compiler: {self.compiler_name}
-        Characters: {self.characters}
-        Keywords: {self.keywords}
-        Tokens: {self.tokens}
-    '''
+Compiler: {self.compiler_name}
+
+Characters:
+{self.characters}
+
+Keywords:
+{self.keywords}
+
+Tokens:
+{self.tokens}
+'''
 
 
 cfg = CFG('input/grammar.cfg')

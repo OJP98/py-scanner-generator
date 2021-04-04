@@ -1,4 +1,8 @@
-class Character:
+from enum import Enum
+from dataclasses import dataclass
+
+
+class Element:
     def __init__(self, ident, value):
         self.ident = ident
         self.value = value
@@ -7,19 +11,19 @@ class Character:
         return f'{self.ident} = {self.value}'
 
 
-class Keyword:
+class Character(Element):
     def __init__(self, ident, value):
-        self.ident = ident
-        self.value = value
-
-    def __repr__(self):
-        return f'{self.ident} = {self.value}'
+        super().__init__(ident, value)
 
 
-class Token:
+class Keyword(Element):
+    def __init__(self, ident, value):
+        super().__init__(ident, value)
+
+
+class Token(Element):
     def __init__(self, ident, value, context=None):
-        self.ident = ident
-        self.value = value
+        super().__init__(ident, value)
         self.context = context
 
     def __repr__(self):
@@ -29,8 +33,26 @@ class Token:
 
 
 class Char:
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, ident, value):
+        super().__init__(ident, value)
+
+
+class VarType(Enum):
+    IDENT = 0
+    STRING = 1
+    CHAR = 2
+    NUMBER = 3
+    UNION = 4
+    DIFFERENCE = 5
+    RANGE = 6
+    APPEND = 7
+
+
+@dataclass
+class Variable:
+    type: VarType
+    value: any = None
 
     def __repr__(self):
-        return ''
+        return self.type.name
+        # return self.type.name + (f':{self.value}' if self.value != None else '')
