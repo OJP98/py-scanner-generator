@@ -1,4 +1,9 @@
-from utils import GetTextInsideParenthesis, IdentExists, GetElementType
+from utils import (
+    IdentExists,
+    GetElementType,
+    GetTextInsideSymbols,
+    GetTextFromDoubleQuotes,
+    GetTextFromSingleQuotes)
 from pprint import pprint
 from cfg_classes import *
 from math import inf
@@ -136,6 +141,7 @@ class CFG():
         # Check if ident exists, else append it to list
         if IdentExists(ident, self.keywords):
             raise Exception('Keyword declared twice!')
+
         self.keywords.append(keyword)
 
     def SetDecl(self, line):
@@ -212,14 +218,16 @@ class CFG():
 
             # Is it a CHR-defined value?
             if 'CHR' in char:
+
+                # Finally, we check for the text inside the parenthesis
+                value = GetTextInsideSymbols(char, '(', ')')
+
                 # Check for missing or extra parenthesis
-                par_count = char.count('(') + char.count(')')
-                if not par_count == 2:
+                if value == None:
                     raise Exception(
                         'In CHARACTERS, char is not defined correctly: missplaced parenthesis')
 
-                # Finally, we check for the text inside the parenthesis
-                value = GetTextInsideParenthesis(char)
+                # Check if the value is a digit
                 if not value.isdigit():
                     raise Exception(
                         'In CHARACTERS, char is not defined correctly: non-digit CHR value')

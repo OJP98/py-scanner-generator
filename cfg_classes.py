@@ -46,6 +46,13 @@ class VarType(Enum):
     DIFFERENCE = 5
     RANGE = 6
     APPEND = 7
+    LKLEENE = 8
+    RKLEENE = 9
+    LPAR = 10
+    RPAR = 11
+    LBRACKET = 12
+    RBRACKET = 13
+    OR = 14
 
 
 @dataclass
@@ -54,5 +61,5 @@ class Variable:
     value: any = None
 
     def __repr__(self):
-        return self.type.name
-        # return self.type.name + (f':{self.value}' if self.value != None else '')
+        # return self.type.name
+        return self.type.name + (f':{self.value}' if self.value != None else '')
