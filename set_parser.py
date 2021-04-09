@@ -8,18 +8,20 @@ from utils import (
     GetElementType
 )
 
-test_list = [Character('letter', ''), Character('symbol', '')]
-symbol_ignore = ['(', '[', '{', '|']
-closing_symbols = ['{', '(', '[']
-
 
 class SetParser:
+
+    symbol_ignore = ['(', '[', '{', '|']
+    closing_symbols = ['{', '(', '[']
+
     def __init__(self, set_, idents):
         self.set = iter(set_)
         self.idents = idents
         self.curr_char = None
         self.prev_char = None
         self.last_char = None
+        self.symbol_ignore = ['(', '[', '{', '|']
+        self.closing_symbols = ['{', '(', '[']
         self.Next()
 
     def Next(self):
@@ -40,19 +42,28 @@ class SetParser:
 
             # curr_char is a letter
             if self.curr_char.isalpha():
-                if self.prev_char and self.prev_char not in symbol_ignore and self.last_char not in symbol_ignore:
+                if self.prev_char and \
+                        self.prev_char not in self.symbol_ignore and \
+                        self.last_char not in self.symbol_ignore:
+
                     yield Variable(VarType.APPEND)
                 yield self.GenerateWord()
 
             # curr_char is a char
             elif self.curr_char == '\'' or self.curr_char == '"':
-                if self.prev_char and self.prev_char not in symbol_ignore and self.last_char not in symbol_ignore:
+                if self.prev_char and \
+                        self.prev_char not in self.symbol_ignore and \
+                        self.last_char not in self.symbol_ignore:
+
                     yield Variable(VarType.APPEND)
                 yield self.GenerateVar(self.curr_char)
 
             # curr_char is a closing symbols
-            elif self.curr_char in closing_symbols:
-                if self.prev_char and self.prev_char not in symbol_ignore and self.last_char not in symbol_ignore:
+            elif self.curr_char in self.closing_symbols:
+                if self.prev_char and \
+                        self.prev_char not in self.symbol_ignore and \
+                        self.last_char not in self.symbol_ignore:
+
                     yield Variable(VarType.APPEND)
 
                 if self.curr_char == '{':
@@ -97,7 +108,7 @@ class SetParser:
             word += self.curr_char
             self.Next()
 
-        res = GetElementType(word, test_list)
+        res = GetElementType(word, self.idents)
         if not res:
             raise Exception(f'Invalid ident: {word}')
 
@@ -121,9 +132,3 @@ class SetParser:
 
         return Variable(VarType.CHAR, var) if symbol_type == '\'' \
             else Variable(VarType.STRING, var)
-
-
-parser = SetParser(
-    "letter {letter} '.' {letter} ['E' ['+'|'-'] letter {letter}]", test_list)
-res = parser.Parse()
-print(list(res))

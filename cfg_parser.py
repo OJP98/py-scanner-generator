@@ -4,6 +4,7 @@ from utils import (
     GetTextInsideSymbols,
     GetTextFromDoubleQuotes,
     GetTextFromSingleQuotes)
+from set_parser import SetParser
 from pprint import pprint
 from cfg_classes import *
 from math import inf
@@ -11,9 +12,10 @@ from math import inf
 CONTEXT_WORDS = ['EXCEPT', 'ANY', 'IGNORE', 'IGNORECASE']
 SCANNER_WORDS = ['COMPILER', 'CHARACTERS',
                  'KEYWORDS', 'TOKENS', 'END', 'PRODUCTIONS']
+TOKEN_KEYWORDS = ['EXCEPT', 'KEYWORDS']
 
 
-class CFG():
+class CFG:
     def __init__(self, filepath):
         self.filepath = filepath
         self.file = None
@@ -93,7 +95,6 @@ class CFG():
         joined_set = ''
         while not any(word in SCANNER_WORDS for word in self.curr_line):
             curr_set = ' '.join(self.curr_line)
-            print(curr_set)
 
             # Is there a comment?
             if '(.' in curr_set:
@@ -117,6 +118,9 @@ class CFG():
                 self.GetKeyValue(joined_set, section)
                 self.Next()
 
+            else:
+                print('POSIBLE ERROR:', curr_set)
+
     def ReadComment(self):
         while not '.)' in self.curr_line:
             self.Next()
@@ -127,7 +131,29 @@ class CFG():
         elif attr == 'KEYWORDS':
             self.KeywordDecl(line)
         elif attr == 'TOKENS':
-            print('pending')
+            self.TokenDecl(line)
+
+    def TokenDecl(self, line):
+        ident, value = line.split('=')
+        ident = ident.strip()
+        value = value.strip().replace('.', '')
+        context = None
+
+        # Check if ident exists
+        if IdentExists(ident, self.characters):
+            raise Exception(f'Ident "{ident}" declared twice!')
+
+        # Are there any keywords?
+        if 'EXCEPT' in value:
+            kwd_index = value.index('EXCEPT')
+            context = value[kwd_index:]
+            value = value[:kwd_index]
+
+        # Parse this new set
+        parser = SetParser(value, self.characters)
+        value = parser.Parse()
+        token = Token(ident, list(value), context)
+        self.tokens.append(token)
 
     def KeywordDecl(self, line):
         ident, value = line.split('=')
