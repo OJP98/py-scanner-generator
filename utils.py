@@ -90,7 +90,8 @@ def GetElementType(string, char_set):
         except:
             raise Exception(f'Unvalid char: {string}')
 
-        return Variable(VarType.CHAR, set(chr(ord_)))
+        new_set = set(chr(ord_))
+        return Variable(VarType.CHAR, new_set)
 
     if string.isdigit():
         return Variable(VarType.NUMBER, string)
@@ -99,4 +100,5 @@ def GetElementType(string, char_set):
         return Variable(VarType.IDENT, string)
 
     if 'CHR' in string:
-        return Variable(VarType.CHAR, set(GetCharValue(string)))
+        char = set(GetCharValue(string))
+        return Variable(VarType.CHAR, char)

@@ -5,7 +5,7 @@ from utils import (
     GetIdentValue,
     GetCharValue
 )
-from set_parser import SetParser
+from set_parser import SetParser, SetGenerator
 from pprint import pprint
 from cfg_classes import *
 from math import inf
@@ -193,11 +193,12 @@ class CFG:
     def Set(self, value):
         value = value.replace(' ', '')
 
-        if not '+' in value and not '-' in value:
-            return GetElementType(value, self.characters)
+        # if not '+' in value and not '-' in value:
+        #     return GetElementType(value, self.characters)
 
-        if any(i in ['+', '-'] for i in value):
-            bset = self.BasicSet(value)
+        # if any(i in ['+', '-'] for i in value):
+        #     bset = self.BasicSet(value)
+        bset = self.BasicSet(value)
 
         return bset
 
@@ -224,7 +225,7 @@ class CFG:
                 string = string[minus_index+1:]
 
             else:
-                char = self.Char(str(string), self.characters)
+                char = self.Char(string, self.characters)
                 temp.append(char)
                 break
 
@@ -232,62 +233,45 @@ class CFG:
 
     def Char(self, string, item_set):
 
-        # Check if it has a . or a CHR or even "
-        char_vals = ['.', 'CHR', '"', '\'']
-        if not any(char in char_vals for char in string):
-            # Check if ident exists
-            if not IdentExists(string, item_set):
-                raise Exception(
-                    f'In CHARACTERS, char is not defined correctly: indent "{string}" not defined')
+        values = string.split('..')
+        # print(values)
 
-            return GetElementType(string, self.characters)
+        if len(values) == 1:
+            val = values[0]
+            return GetElementType(val, self.characters)
 
-        # Split the char in ranges
-        string = string.split('..')
-
-        if len(string) == 1:
-            return GetElementType(string[0], self.characters)
-
-        # Is there more than one .. instance?
-        if len(string) != 2:
+        if len(values) != 2:
             raise Exception(
-                'In CHARACTERS, found more than one range instance.')
+                f'In CHARACTERS, found more than one range instance: {string}')
 
-        range_vals = list()
-        for char in string:
-            # Check if there's a dot in some value
-            if '.' in char or not char:
-                raise Exception(
-                    'In CHARACTERS, a set is not defined correctly')
+        val1 = GetElementType(values[0], self.characters)
+        val2 = GetElementType(values[1], self.characters)
 
-            # Is it a CHR-defined value?
-            if 'CHR' in char:
+        if not val1 or not val2:
+            raise Exception(f'Unvalid char: {string}')
 
-                # Finally, we check for the text inside the parenthesis
-                value = GetTextInsideSymbols(char, '(', ')')
-
-                # Check for missing or extra parenthesis
-                if value == None:
-                    raise Exception(
-                        'In CHARACTERS, char is not defined correctly: missplaced parenthesis')
-
-                # Check if the value is a digit
-                if not value.isdigit():
-                    raise Exception(
-                        'In CHARACTERS, char is not defined correctly: non-digit CHR value')
-
-                range_vals.append(int(value))
-
-        # Is the second CHR greater than the first one?
-        if range_vals[0] > range_vals[1]:
+        if val1.type != VarType.CHAR or val2.type != VarType.CHAR:
             raise Exception(
-                'In CHARACTERS, char range (..) is not defined correctly')
+                f'Unvalid char range {string}')
+
+        val1 = list(val1.value)[0]
+        val2 = list(val2.value)[0]
+        range1 = ord(val1)
+        range2 = ord(val2)
+
+        if range1 > range2:
+            range1, range2 = range2, range1
 
         # Create a new list with all the chars in the range
         char_range = set([chr(char)
-                          for char in range(range_vals[0], range_vals[1] + 1)])
+                          for char in range(range1, range2 + 1)])
 
         return Variable(VarType.CHAR, char_range)
+
+    def GenerateSet(self, eval_set):
+        generator = SetGenerator(eval_set, self.characters)
+        generated_set = generator.GenerateSet()
+        return generated_set
 
     def __repr__(self):
         return f'''

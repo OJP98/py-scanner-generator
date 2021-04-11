@@ -1,3 +1,4 @@
+import codecs
 from cfg_classes import (
     Variable,
     VarType,
@@ -126,5 +127,39 @@ class SetParser:
         if var.count(symbol_type) != 2:
             raise Exception(f'Expected {symbol_type} for set')
 
-        return Variable(VarType.CHAR, var) if symbol_type == '\'' \
-            else Variable(VarType.STRING, var)
+        var = var.replace(symbol_type, '')
+        if symbol_type == '\'':
+            try:
+                char = codecs.decode(var, 'unicode_escape')
+                ord_ = ord(char)
+            except:
+                raise Exception(f'Unvalid char: {var}')
+
+            return Variable(VarType.CHAR, set(chr(ord_)))
+
+        return Variable(VarType.STRING, var)
+
+
+class SetGenerator:
+    def __init__(self, set_, idents):
+        self.set = iter(set_)
+        self.idents = idents
+        self.curr_var = None
+        self.prev_var = None
+        self.Next()
+
+    def Next(self):
+        try:
+            self.prev_var = self.curr_var
+            self.curr_var = next(self.set)
+        except StopIteration:
+            self.curr_var = None
+
+    def GenerateSet(self):
+        while self.curr_var != None:
+
+            if self.curr_var.type == VarType.STRING:
+                yield set([chr(ord(char)) for char in self.curr_var.value])
+                self.Next()
+            else:
+                self.Next()
