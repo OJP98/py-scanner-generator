@@ -2,8 +2,9 @@ from utils import (
     IdentExists,
     GetElementType,
     GetTextInsideSymbols,
-    GetTextFromDoubleQuotes,
-    GetTextFromSingleQuotes)
+    GetIdentValue,
+    GetCharValue
+)
 from set_parser import SetParser
 from pprint import pprint
 from cfg_classes import *
@@ -13,6 +14,7 @@ CONTEXT_WORDS = ['EXCEPT', 'ANY', 'IGNORE', 'IGNORECASE']
 SCANNER_WORDS = ['COMPILER', 'CHARACTERS', 'IGNORE',
                  'KEYWORDS', 'TOKENS', 'END', 'PRODUCTIONS']
 TOKEN_KEYWORDS = ['EXCEPT', 'KEYWORDS']
+ANY_SET = set([chr(char) for char in range(0, 65535)])
 
 
 class CFG:
@@ -222,7 +224,7 @@ class CFG:
                 string = string[minus_index+1:]
 
             else:
-                char = self.Char(string, self.characters)
+                char = self.Char(str(string), self.characters)
                 temp.append(char)
                 break
 
@@ -254,7 +256,6 @@ class CFG:
             raise Exception(
                 'In CHARACTERS, found more than one range instance.')
 
-        temp = list()
         range_vals = list()
         for char in string:
             # Check if there's a dot in some value
@@ -280,18 +281,14 @@ class CFG:
 
                 range_vals.append(int(value))
 
-            # Append it into the temp list
-            temp.append(GetElementType(char, self.characters))
-
         # Is the second CHR greater than the first one?
         if range_vals[0] > range_vals[1]:
             raise Exception(
                 'In CHARACTERS, char range (..) is not defined correctly')
 
         # Create a new list with all the chars in the range
-        char_range = list()
-        for char in range(range_vals[0], range_vals[1] + 1):
-            char_range.append(chr(char))
+        char_range = set([chr(char)
+                          for char in range(range_vals[0], range_vals[1] + 1)])
 
         return Variable(VarType.CHAR, char_range)
 

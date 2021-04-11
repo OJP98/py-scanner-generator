@@ -44,20 +44,46 @@ def GetNoAlpha(string):
     return pos if pos < len(string) else None
 
 
-def IdentExists(string, char_set):
+def IdentExists(ident, char_set):
     try:
-        next(filter(lambda x: x.ident == string, char_set))
+        next(filter(lambda x: x.ident == ident, char_set))
         return True
     except StopIteration:
         return False
 
 
+def GetIdentValue(ident, char_set):
+    try:
+        ident = next(filter(lambda x: x.ident == ident, char_set))
+        return ident.value.value
+    except StopIteration:
+        return None
+
+
+def GetCharValue(char):
+    # Finally, we check for the text inside the parenthesis
+    value = GetTextInsideSymbols(char, '(', ')')
+
+    # Check for missing or extra parenthesis
+    if value == None:
+        raise Exception(
+            'In CHARACTERS, char is not defined correctly: missplaced parenthesis')
+
+    # Check if the value is a digit
+    if not value.isdigit():
+        raise Exception(
+            'In CHARACTERS, char is not defined correctly: non-digit CHR value')
+
+    return chr(int(value))
+
+
 def GetElementType(string, char_set):
     if '"' in string:
-        return Variable(VarType.STRING, string)
+        return Variable(VarType.STRING, string.replace('"', ''))
 
     if '\'' in string:
-        return Variable(VarType.CHAR, string)
+        char = string.replace('\'', '')
+        return Variable(VarType.CHAR, char)
 
     if string.isdigit():
         return Variable(VarType.NUMBER, string)
@@ -66,4 +92,4 @@ def GetElementType(string, char_set):
         return Variable(VarType.IDENT, string)
 
     if 'CHR' in string:
-        return Variable(VarType.CHAR, string)
+        return Variable(VarType.CHAR, GetCharValue(string))
