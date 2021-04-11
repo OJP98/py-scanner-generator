@@ -242,9 +242,6 @@ class CFG:
 
             return GetElementType(string, self.characters)
 
-        elif '"' in string:
-            return GetElementType(string, self.characters)
-
         # Split the char in ranges
         string = string.split('..')
 

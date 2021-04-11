@@ -1,3 +1,4 @@
+import codecs
 from cfg_classes import VarType, Variable
 from re import findall
 
@@ -82,8 +83,14 @@ def GetElementType(string, char_set):
         return Variable(VarType.STRING, string.replace('"', ''))
 
     if '\'' in string:
-        char = string.replace('\'', '')
-        return Variable(VarType.CHAR, char)
+        char = GetTextFromSingleQuotes(string)
+        try:
+            char = codecs.decode(char, 'unicode_escape')
+            ord_ = ord(char)
+        except:
+            raise Exception(f'Unvalid char: {string}')
+
+        return Variable(VarType.CHAR, set(chr(ord_)))
 
     if string.isdigit():
         return Variable(VarType.NUMBER, string)
@@ -92,4 +99,4 @@ def GetElementType(string, char_set):
         return Variable(VarType.IDENT, string)
 
     if 'CHR' in string:
-        return Variable(VarType.CHAR, GetCharValue(string))
+        return Variable(VarType.CHAR, set(GetCharValue(string)))
