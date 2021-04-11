@@ -10,10 +10,6 @@ from utils import (
 
 
 class SetParser:
-
-    symbol_ignore = ['(', '[', '{', '|']
-    closing_symbols = ['{', '(', '[']
-
     def __init__(self, set_, idents):
         self.set = iter(set_)
         self.idents = idents

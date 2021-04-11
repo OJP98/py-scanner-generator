@@ -2,6 +2,7 @@ from enum import Enum
 from dataclasses import dataclass
 
 
+# __________IMPORTANT DATA CLASSES__________
 class Element:
     def __init__(self, ident, value):
         self.ident = ident
@@ -37,6 +38,7 @@ class Char:
         super().__init__(ident, value)
 
 
+# __________ALL THE DIFFERENT SYMBOLS__________
 class VarType(Enum):
     IDENT = 0
     STRING = 1

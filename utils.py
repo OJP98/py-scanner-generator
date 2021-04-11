@@ -53,7 +53,6 @@ def IdentExists(string, char_set):
 
 
 def GetElementType(string, char_set):
-
     if '"' in string:
         return Variable(VarType.STRING, string)
 

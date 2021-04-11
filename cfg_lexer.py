@@ -10,7 +10,7 @@ from cfg_classes import *
 from math import inf
 
 CONTEXT_WORDS = ['EXCEPT', 'ANY', 'IGNORE', 'IGNORECASE']
-SCANNER_WORDS = ['COMPILER', 'CHARACTERS',
+SCANNER_WORDS = ['COMPILER', 'CHARACTERS', 'IGNORE',
                  'KEYWORDS', 'TOKENS', 'END', 'PRODUCTIONS']
 TOKEN_KEYWORDS = ['EXCEPT', 'KEYWORDS']
 
@@ -24,6 +24,7 @@ class CFG:
         self.characters = list()
         self.keywords = list()
         self.tokens = list()
+        self.ignore = None
 
         self.file_lines = self.ReadFile()
         self.curr_line = None
@@ -77,6 +78,10 @@ class CFG:
                     self.Next()
                     self.ReadSection('TOKENS')
 
+                elif 'IGNORE' in self.curr_line:
+                    self.ReadIgnore()
+                    self.Next()
+
                 elif 'PRODUCTIONS' in self.curr_line:
                     self.Next()
 
@@ -125,6 +130,12 @@ class CFG:
         while not '.)' in self.curr_line:
             self.Next()
 
+    def ReadIgnore(self):
+        curr_set = ' '.join(self.curr_line)
+        line = curr_set.split('IGNORE', 1)[1]
+        line = line.replace('.', ' ')
+        self.ignore = self.Set(line)
+
     def GetKeyValue(self, line, attr):
         if attr == 'CHARACTERS':
             self.SetDecl(line)
@@ -171,52 +182,51 @@ class CFG:
         self.keywords.append(keyword)
 
     def SetDecl(self, line):
-
-        def BasicSet(string):
-            temp = list()
-
-            while string:
-                plus_index = string.find('+')
-                minus_index = string.find('-')
-
-                plus_index = plus_index if plus_index != -1 else inf
-                minus_index = minus_index if minus_index != -1 else inf
-
-                if plus_index < minus_index:
-                    char = self.Char(string[:plus_index], self.characters)
-                    temp.append(char)
-                    temp.append(Variable(VarType.UNION, '+'))
-                    string = string[plus_index+1:]
-
-                elif minus_index < plus_index:
-                    char = self.Char(string[:minus_index], self.characters)
-                    temp.append(char)
-                    temp.append(Variable(VarType.DIFFERENCE, '-'))
-                    string = string[minus_index+1:]
-
-                else:
-                    char = self.Char(string, self.characters)
-                    temp.append(char)
-                    break
-
-            return temp
-
-        def Set(value):
-            value = value.replace(' ', '')
-
-            if not '+' in value or not '-' in value:
-                return GetElementType(value, self.characters)
-
-            if any(i in '+-' for i in value):
-                bset = BasicSet(value)
-
-            return bset
-
         key, value = line.split('=')
 
         key = key.strip()
-        value = Set(value.strip())
+        value = self.Set(value.strip())
         self.characters.append(Character(key, value))
+
+    def Set(self, value):
+        value = value.replace(' ', '')
+
+        if not '+' in value and not '-' in value:
+            return GetElementType(value, self.characters)
+
+        if any(i in ['+', '-'] for i in value):
+            bset = self.BasicSet(value)
+
+        return bset
+
+    def BasicSet(self, string):
+        temp = list()
+
+        while string:
+            plus_index = string.find('+')
+            minus_index = string.find('-')
+
+            plus_index = plus_index if plus_index != -1 else inf
+            minus_index = minus_index if minus_index != -1 else inf
+
+            if plus_index < minus_index:
+                char = self.Char(string[:plus_index], self.characters)
+                temp.append(char)
+                temp.append(Variable(VarType.UNION, '+'))
+                string = string[plus_index+1:]
+
+            elif minus_index < plus_index:
+                char = self.Char(string[:minus_index], self.characters)
+                temp.append(char)
+                temp.append(Variable(VarType.DIFFERENCE, '-'))
+                string = string[minus_index+1:]
+
+            else:
+                char = self.Char(string, self.characters)
+                temp.append(char)
+                break
+
+        return temp
 
     def Char(self, string, item_set):
 
@@ -233,9 +243,19 @@ class CFG:
         elif '"' in string:
             return GetElementType(string, self.characters)
 
-        temp = list()
+        # Split the char in ranges
         string = string.split('..')
 
+        if len(string) == 1:
+            return GetElementType(string[0], self.characters)
+
+        # Is there more than one .. instance?
+        if len(string) != 2:
+            raise Exception(
+                'In CHARACTERS, found more than one range instance.')
+
+        temp = list()
+        range_vals = list()
         for char in string:
             # Check if there's a dot in some value
             if '.' in char or not char:
@@ -258,12 +278,22 @@ class CFG:
                     raise Exception(
                         'In CHARACTERS, char is not defined correctly: non-digit CHR value')
 
+                range_vals.append(int(value))
+
+            # Append it into the temp list
             temp.append(GetElementType(char, self.characters))
 
-            if len(string) > 1 and char != string[-1]:
-                temp.append(Variable(VarType.RANGE, '..'))
+        # Is the second CHR greater than the first one?
+        if range_vals[0] > range_vals[1]:
+            raise Exception(
+                'In CHARACTERS, char range (..) is not defined correctly')
 
-        return temp if len(temp) > 1 else temp[0]
+        # Create a new list with all the chars in the range
+        char_range = list()
+        for char in range(range_vals[0], range_vals[1] + 1):
+            char_range.append(chr(char))
+
+        return Variable(VarType.CHAR, char_range)
 
     def __repr__(self):
         return f'''
@@ -277,7 +307,8 @@ Keywords:
 
 Tokens:
 {self.tokens}
-'''
+
+''' + (f'Ignore: {self.ignore}' if self.ignore else '')
 
 
 cfg = CFG('input/grammar.cfg')
