@@ -188,18 +188,15 @@ class CFG:
 
         key = key.strip()
         value = self.Set(value.strip())
-        self.characters.append(Character(key, value))
+        # print(value[0].value)
+        final_set = SetGenerator(value, self.characters).GenerateSet()
+        # print(final_set)
+        # print(list(final_set))
+        self.characters.append(Character(key, final_set))
 
     def Set(self, value):
         value = value.replace(' ', '')
-
-        # if not '+' in value and not '-' in value:
-        #     return GetElementType(value, self.characters)
-
-        # if any(i in ['+', '-'] for i in value):
-        #     bset = self.BasicSet(value)
         bset = self.BasicSet(value)
-
         return bset
 
     def BasicSet(self, string):
@@ -234,7 +231,6 @@ class CFG:
     def Char(self, string, item_set):
 
         values = string.split('..')
-        # print(values)
 
         if len(values) == 1:
             val = values[0]

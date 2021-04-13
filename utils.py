@@ -56,7 +56,7 @@ def IdentExists(ident, char_set):
 def GetIdentValue(ident, char_set):
     try:
         ident = next(filter(lambda x: x.ident == ident, char_set))
-        return ident.value.value
+        return ident.value
     except StopIteration:
         return None
 
@@ -80,7 +80,9 @@ def GetCharValue(char):
 
 def GetElementType(string, char_set):
     if '"' in string:
-        return Variable(VarType.STRING, string.replace('"', ''))
+        string = string.replace('\"', '')
+        val = set([chr(ord(char)) for char in string])
+        return Variable(VarType.STRING, val)
 
     if '\'' in string:
         char = GetTextFromSingleQuotes(string)
@@ -97,7 +99,7 @@ def GetElementType(string, char_set):
         return Variable(VarType.NUMBER, string)
 
     if IdentExists(string, char_set):
-        return Variable(VarType.IDENT, string)
+        return Variable(VarType.IDENT, GetIdentValue(string, char_set))
 
     if 'CHR' in string:
         char = set(GetCharValue(string))

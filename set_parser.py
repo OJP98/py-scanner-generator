@@ -6,7 +6,8 @@ from cfg_classes import (
 )
 
 from utils import (
-    GetElementType
+    GetElementType,
+    GetIdentValue
 )
 
 
@@ -146,6 +147,7 @@ class SetGenerator:
         self.idents = idents
         self.curr_var = None
         self.prev_var = None
+        self.res_set = None
         self.Next()
 
     def Next(self):
@@ -155,11 +157,39 @@ class SetGenerator:
         except StopIteration:
             self.curr_var = None
 
+        if not self.res_set:
+            self.res_set = self.curr_var.value
+            print('Now the self.res is', self.curr_var)
+
     def GenerateSet(self):
         while self.curr_var != None:
 
-            if self.curr_var.type == VarType.STRING:
-                yield set([chr(ord(char)) for char in self.curr_var.value])
+            if self.curr_var.type == VarType.UNION:
+                self.NewSet('UNION')
                 self.Next()
+
+            elif self.curr_var.type == VarType.DIFFERENCE:
+                self.NewSet('DIFFERENCE')
+                self.Next()
+
             else:
                 self.Next()
+
+        return self.res_set
+
+    def NewSet(self, op):
+        self.Next()
+
+        if self.curr_var.value == None:
+            Exception(f'Unvalid set declaration')
+
+        print()
+        curr_set = self.curr_var.value
+        print(self.res_set, curr_set)
+
+        if op == 'UNION':
+            self.res_set = self.res_set.union(curr_set)
+        elif op == 'DIFFERENCE':
+            self.res_set = self.res_set.difference(curr_set)
+
+        print('El resultado de la operacion es:', self.res_set)
