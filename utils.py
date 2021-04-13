@@ -99,7 +99,7 @@ def GetElementType(string, char_set):
         return Variable(VarType.NUMBER, string)
 
     if IdentExists(string, char_set):
-        return Variable(VarType.IDENT, GetIdentValue(string, char_set))
+        return Variable(VarType.IDENT, GetIdentValue(string, char_set), string)
 
     if 'CHR' in string:
         char = set(GetCharValue(string))

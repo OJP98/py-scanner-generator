@@ -33,11 +33,6 @@ class Token(Element):
         return f'{self.ident} = {self.value}'
 
 
-class Char:
-    def __init__(self, ident, value):
-        super().__init__(ident, value)
-
-
 # __________ALL THE DIFFERENT SYMBOLS__________
 class VarType(Enum):
     IDENT = 0
@@ -61,7 +56,59 @@ class VarType(Enum):
 class Variable:
     type: VarType
     value: any = None
+    name: str = None
 
     def __repr__(self):
-        return self.type.name
-        # return self.type.name + (f':{self.value}' if self.value != None else '')
+        if self.name:
+            return f'{self.type.name}: {self.name}'
+        return self.type.name + (f':{self.value}' if self.value != None else '')
+        # return self.type.name
+
+
+# __________NODE TYPES__________
+class Kleene:
+    def __init__(self, a):
+        self.a = a
+
+    def __repr__(self):
+        return f'{ {self.a} }'
+
+
+class Bracket:
+    def __init__(self, a):
+        self.a = a
+
+    def __repr__(self):
+        return f'[ {self.a} ]'
+
+
+class Or:
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def __repr__(self):
+        # return f'({self.a} | {self.b})'
+        return f'{self.a} | {self.b}'
+
+
+class Append:
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def __repr__(self):
+        # return f'({self.a} . {self.b})'
+        return f'{self.a} . {self.b}'
+
+
+class Symbol:
+    def __init__(self, value, type_=None, ident_name=None):
+        self.value = value
+        self.type = type_
+        self.ident_name = ident_name
+
+    def __repr__(self):
+        if self.ident_name:
+            return f'{self.ident_name}'
+        return f'{self.value}'

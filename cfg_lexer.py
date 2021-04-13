@@ -9,6 +9,7 @@ from set_parser import SetParser, SetGenerator
 from pprint import pprint
 from cfg_classes import *
 from math import inf
+from parsing import Parser
 
 CONTEXT_WORDS = ['EXCEPT', 'ANY', 'IGNORE', 'IGNORECASE']
 SCANNER_WORDS = ['COMPILER', 'CHARACTERS', 'IGNORE',
@@ -152,7 +153,7 @@ class CFG:
     def TokenDecl(self, line):
         ident, value = line.split('=')
         ident = ident.strip()
-        value = value.strip().replace('.', '')
+        value = value.strip()
         context = None
 
         # Check if ident exists
@@ -175,7 +176,6 @@ class CFG:
         ident, value = line.split('=')
         ident = ident.strip()
         value = value.strip().replace('.', '')
-        # final_set = set([chr(ord(char)) for char in value.replace('"', '')])
         value = Variable(VarType.STRING, value)
 
         # Create ident object
@@ -287,4 +287,8 @@ Tokens:
 
 
 cfg = CFG('input/grammar.cfg')
-print(cfg)
+print(cfg.tokens[0])
+parser = Parser(cfg)
+res = parser.Parse()
+print()
+print(res)
