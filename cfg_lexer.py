@@ -10,6 +10,7 @@ from pprint import pprint
 from cfg_classes import *
 from math import inf
 from parsing import Parser
+from direct_dfa import DDFA
 
 CONTEXT_WORDS = ['EXCEPT', 'ANY', 'IGNORE', 'IGNORECASE']
 SCANNER_WORDS = ['COMPILER', 'CHARACTERS', 'IGNORE',
@@ -168,7 +169,7 @@ class CFG:
 
         # Parse this new set
         parser = SetParser(value, self.characters)
-        value = parser.Parse()
+        value = parser.Parse(is_token=True)
         token = Token(ident, list(value), context)
         self.tokens.append(token)
 
@@ -287,8 +288,17 @@ Tokens:
 
 
 cfg = CFG('input/grammar.cfg')
-print(cfg.tokens[0])
 parser = Parser(cfg)
+# print(cfg)
 res = parser.Parse()
-print()
-print(res)
+# pprint(res)
+# symbols =
+test_tree = res[3]
+print(test_tree)
+symbols = set([x for x in '1234567890'])
+print(symbols)
+ddfa = DDFA(test_tree, symbols, '121347809537189043')
+print(ddfa.nodes)
+print(ddfa.trans_func)
+ddfa_regex = ddfa.EvalRegex()
+print(ddfa_regex)

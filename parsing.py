@@ -9,8 +9,8 @@ from cfg_classes import (
 class Parser:
     def __init__(self, cfg):
         self.cfg = cfg
-        self.tokens = iter(self.cfg.tokens[0].value)
-        self.Next()
+        self.tokens = None
+        self.parsed_trees = list()
 
     def Next(self):
         try:
@@ -81,10 +81,19 @@ class Parser:
 
         return res
 
-    def Parse(self):
+    def NewTree(self):
+        self.Next()
         if self.curr_token == None:
             return None
 
         res = self.Expression()
-
         return res
+
+    def Parse(self):
+        for token in self.cfg.tokens:
+            # token.value gives the arrays of variables
+            self.tokens = iter(token.value)
+            parsed_tree = self.NewTree()
+            self.parsed_trees.append(parsed_tree)
+
+        return self.parsed_trees

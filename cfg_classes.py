@@ -71,7 +71,7 @@ class Kleene:
         self.a = a
 
     def __repr__(self):
-        return f'{ {self.a} }'
+        return '{ ' + f'{self.a}' + ' }'
 
 
 class Bracket:
