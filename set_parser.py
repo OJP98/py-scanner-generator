@@ -159,7 +159,6 @@ class SetGenerator:
 
         if not self.res_set:
             self.res_set = self.curr_var.value
-            print('Now the self.res is', self.curr_var)
 
     def GenerateSet(self):
         while self.curr_var != None:
@@ -183,13 +182,9 @@ class SetGenerator:
         if self.curr_var.value == None:
             Exception(f'Unvalid set declaration')
 
-        print()
         curr_set = self.curr_var.value
-        print(self.res_set, curr_set)
 
         if op == 'UNION':
             self.res_set = self.res_set.union(curr_set)
         elif op == 'DIFFERENCE':
             self.res_set = self.res_set.difference(curr_set)
-
-        print('El resultado de la operacion es:', self.res_set)

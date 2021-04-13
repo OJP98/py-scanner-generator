@@ -136,7 +136,10 @@ class CFG:
         curr_set = ' '.join(self.curr_line)
         line = curr_set.split('IGNORE', 1)[1]
         line = line.replace('.', ' ')
-        self.ignore = self.Set(line)
+        value = self.Set(line)
+
+        final_set = SetGenerator(value, self.characters).GenerateSet()
+        self.ignore = final_set
 
     def GetKeyValue(self, line, attr):
         if attr == 'CHARACTERS':
@@ -172,6 +175,7 @@ class CFG:
         ident, value = line.split('=')
         ident = ident.strip()
         value = value.strip().replace('.', '')
+        # final_set = set([chr(ord(char)) for char in value.replace('"', '')])
         value = Variable(VarType.STRING, value)
 
         # Create ident object
@@ -188,10 +192,7 @@ class CFG:
 
         key = key.strip()
         value = self.Set(value.strip())
-        # print(value[0].value)
         final_set = SetGenerator(value, self.characters).GenerateSet()
-        # print(final_set)
-        # print(list(final_set))
         self.characters.append(Character(key, final_set))
 
     def Set(self, value):
