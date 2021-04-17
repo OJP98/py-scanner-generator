@@ -47,16 +47,18 @@ class SetParser:
                     yield Variable(VarType.APPEND)
                 yield self.GenerateWord()
 
-            # curr_char is a char
+            # curr_char is a char or string
             elif self.curr_char == '\'' or self.curr_char == '"':
                 if self.prev_char and \
                         self.prev_char not in self.symbol_ignore and \
                         self.last_char not in self.symbol_ignore:
 
                     yield Variable(VarType.APPEND)
-                yield self.GenerateVar(self.curr_char)
+                res = self.GenerateVar(self.curr_char)
+                for var in res:
+                    yield var
 
-            # curr_char is a closing symbols
+            # curr_char is a closing symbol
             elif self.curr_char in self.closing_symbols:
                 if self.prev_char and \
                         self.prev_char not in self.symbol_ignore and \
@@ -140,9 +142,16 @@ class SetParser:
             except:
                 raise Exception(f'Unvalid char: {var}')
 
-            return Variable(VarType.CHAR, set(chr(ord_)))
+            return [Variable(VarType.CHAR, set(chr(ord_)))]
 
-        return Variable(VarType.STRING, var)
+        elif symbol_type == '\"':
+            res = list()
+            for char in var:
+                res.append(Variable(VarType.STRING, set(char)))
+                res.append(Variable(VarType.APPEND, '.'))
+
+            res.pop()
+            return res
 
 
 class SetGenerator:

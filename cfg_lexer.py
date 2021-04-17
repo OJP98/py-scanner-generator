@@ -289,16 +289,21 @@ Tokens:
 
 cfg = CFG('input/grammar.cfg')
 parser = Parser(cfg)
+
+pprint(cfg.tokens)
+
+tokens = parser.ToSingleExpression()
+
 # print(cfg)
-res = parser.Parse()
-# pprint(res)
-# symbols =
-test_tree = res[3]
-print(test_tree)
-symbols = set([x for x in '1234567890'])
-print(symbols)
-ddfa = DDFA(test_tree, symbols, '121347809537189043')
-print(ddfa.nodes)
-print(ddfa.trans_func)
-ddfa_regex = ddfa.EvalRegex()
-print(ddfa_regex)
+# print(tokens)
+
+tree = parser.Parse(tokens)
+print(f'\nARBOL SINTÁCTICO:\n{tree}')
+
+# symbols = set([x for x in '.ABCDEFH0123456789abcdefghijklmnopqrstuvwxyz()'])
+# ddfa = DDFA(expression, symbols, 'aaa.')
+# pprint(ddfa.states)
+# print(ddfa.nodes)
+# pprint(ddfa.trans_func)
+# ddfa_regex = ddfa.EvalRegex()
+# print(ddfa_regex)

@@ -88,8 +88,8 @@ class Or:
         self.b = b
 
     def __repr__(self):
-        # return f'({self.a} | {self.b})'
-        return f'{self.a} | {self.b}'
+        return f'({self.a}) | ({self.b})'
+        # return f'{self.a} | {self.b}'
 
 
 class Append:

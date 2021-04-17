@@ -10,7 +10,7 @@ class Parser:
     def __init__(self, cfg):
         self.cfg = cfg
         self.tokens = None
-        self.parsed_trees = list()
+        self.parsed_tree = list()
 
     def Next(self):
         try:
@@ -81,7 +81,8 @@ class Parser:
 
         return res
 
-    def NewTree(self):
+    def Parse(self, tokens):
+        self.tokens = iter(tokens)
         self.Next()
         if self.curr_token == None:
             return None
@@ -89,11 +90,14 @@ class Parser:
         res = self.Expression()
         return res
 
-    def Parse(self):
+    def ToSingleExpression(self):
+        new_list = list()
         for token in self.cfg.tokens:
-            # token.value gives the arrays of variables
-            self.tokens = iter(token.value)
-            parsed_tree = self.NewTree()
-            self.parsed_trees.append(parsed_tree)
+            tokens = token.value
+            tokens.insert(0, Variable(VarType.LPAR, '('))
+            tokens.append(Variable(VarType.RPAR, ')'))
+            tokens.append(Variable(VarType.OR, '|'))
+            new_list += tokens
 
-        return self.parsed_trees
+        new_list.pop()
+        return new_list
