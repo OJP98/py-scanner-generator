@@ -1,4 +1,7 @@
 from pprint import pprint
+from utils import WriteToFile
+from pythomata import SimpleDFA
+from graphviz import Digraph
 
 RAW_STATES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
@@ -19,14 +22,10 @@ class DDFA:
         # Class properties
         self.tree = tree
         self.regex = regex
-        self.augmented_state = None
+        self.augmented_states = None
         self.iter = 1
 
         self.STATES = iter(RAW_STATES)
-        try:
-            self.symbols.remove('e')
-        except:
-            pass
 
         # Initialize dfa construction
         self.ParseTree(self.tree)
@@ -48,7 +47,13 @@ class DDFA:
 
         # Filter the nodes that have a symbol
         self.nodes = list(filter(lambda x: x._id, self.nodes))
-        self.augmented_state = self.nodes[-1]._id
+
+        # TODO: get all the nodes with the symbol '#'.
+        self.augmented_states = list(
+            filter(lambda x: '#-' in x.value, self.nodes))
+
+        self.augmented_states = set(
+            [node._id for node in self.augmented_states])
 
         # Recursion
         self.CalcNewStates(initial_state, next(self.STATES))
@@ -57,7 +62,9 @@ class DDFA:
 
         if not self.states:
             self.states.append(set(state))
-            if self.augmented_state in state:
+
+            # TODO: if state in set(self.augmented_states).
+            if state in list(self.augmented_states):
                 self.accepting_states.update(curr_state)
 
         # Iteramos por cada símbolo
@@ -95,8 +102,8 @@ class DDFA:
                 existing_states[symbol] = next_state
                 self.trans_func[curr_state] = existing_states
 
-                # Is it an acceptina_state?
-                if self.augmented_state in new_state:
+                # Is it an accepting_state?
+                if bool(self.augmented_states & new_state):
                     self.accepting_states.update(next_state)
 
                 # Repeat with this new state
@@ -173,6 +180,7 @@ class DDFA:
         firstpos = node_a.firstpos
         lastpos = node_a.lastpos
         new_node = Node(None, firstpos, lastpos, True, '*', node_a)
+        self.nodes.append(new_node)
         return new_node
 
     def BracketNode(self, node):
@@ -190,9 +198,9 @@ class DDFA:
         self.nodes.append(new_node)
         return new_node
 
-    def EvalRegex(self):
+    def EvalRegex(self, word):
         curr_state = 'A'
-        for symbol in self.regex:
+        for symbol in word:
 
             if not symbol in self.symbols:
                 return 'No'
@@ -200,12 +208,27 @@ class DDFA:
             try:
                 curr_state = self.trans_func[curr_state][symbol]
             except:
-                if curr_state in self.accepting_states and symbol in self.trans_func['A']:
-                    curr_state = self.trans_func['A'][symbol]
-                else:
-                    return 'No'
+                return 'No'
+                # if curr_state in self.accepting_states and symbol in self.trans_func['A']:
+                #     curr_state = self.trans_func['A'][symbol]
+                # else:
+                #     return 'No'
 
-        return 'Yes' if curr_state in self.accepting_states else 'No'
+        return f'Yes! {curr_state}' if curr_state in self.accepting_states else 'No'
+
+    def GraphAutomata(self):
+        states = set(self.trans_func.keys())
+        alphabet = set(self.symbols)
+
+        dfa = SimpleDFA(states, alphabet, self.initial_state,
+                        self.accepting_states, self.trans_func)
+
+        graph = dfa.trim().to_graphviz()
+        graph.attr(rankdir='LR')
+
+        source = graph.source
+        WriteToFile('./output/DirectDFA.gv', source)
+        graph.render('./output/DirectDFA.gv', format='pdf', view=True)
 
 
 class Node:

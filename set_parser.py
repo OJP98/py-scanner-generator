@@ -35,7 +35,7 @@ class SetParser:
         except StopIteration:
             self.curr_char = None
 
-    def Parse(self, is_token=False):
+    def Parse(self, token_id=None):
         while self.curr_char != None:
 
             # curr_char is a letter
@@ -99,9 +99,9 @@ class SetParser:
             else:
                 raise Exception(f'Invalid character: {self.curr_char}')
 
-        if is_token:
+        if token_id != None:
             yield Variable(VarType.APPEND, '.')
-            yield Variable(VarType.STRING, '#')
+            yield Variable(VarType.STRING, f'#-{token_id}')
 
     def GenerateWord(self):
         word = self.curr_char

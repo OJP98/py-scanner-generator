@@ -169,7 +169,7 @@ class CFG:
 
         # Parse this new set
         parser = SetParser(value, self.characters)
-        value = parser.Parse(is_token=True)
+        value = parser.Parse(token_id=len(self.tokens))
         token = Token(ident, list(value), context)
         self.tokens.append(token)
 
@@ -290,7 +290,7 @@ Tokens:
 cfg = CFG('input/grammar.cfg')
 parser = Parser(cfg)
 
-pprint(cfg.tokens)
+# pprint(cfg.tokens)
 
 tokens = parser.ToSingleExpression()
 
@@ -300,10 +300,14 @@ tokens = parser.ToSingleExpression()
 tree = parser.Parse(tokens)
 print(f'\nARBOL SINTÁCTICO:\n{tree}')
 
-# symbols = set([x for x in '.ABCDEFH0123456789abcdefghijklmnopqrstuvwxyz()'])
-# ddfa = DDFA(expression, symbols, 'aaa.')
-# pprint(ddfa.states)
-# print(ddfa.nodes)
-# pprint(ddfa.trans_func)
-# ddfa_regex = ddfa.EvalRegex()
-# print(ddfa_regex)
+symbols = set(
+    [x for x in '.ABCDEFH0123456789abcdefghijklmnopqrstuvwxyz()1234567890'])
+ddfa = DDFA(tree, symbols, '123469504712984371298651437129')
+print(ddfa.nodes)
+print('states:', ddfa.states)
+print('accepting states:', ddfa.accepting_states)
+print('augmented states:', ddfa.augmented_states)
+pprint(ddfa.trans_func)
+ddfa_regex = ddfa.EvalRegex('abb')
+print(ddfa_regex)
+# ddfa.GraphAutomata()
