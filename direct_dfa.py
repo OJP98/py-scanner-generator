@@ -17,6 +17,7 @@ class DDFA:
         self.states = list()
         self.trans_func = dict()
         self.accepting_states = set()
+        self.accepting_dict = dict()
         self.initial_state = 'A'
 
         # Class properties
@@ -65,6 +66,7 @@ class DDFA:
 
             # TODO: if state in set(self.augmented_states).
             if state in list(self.augmented_states):
+                self.accepting_dict[curr_state] = state
                 self.accepting_states.update(curr_state)
 
         # Iteramos por cada símbolo
@@ -105,6 +107,7 @@ class DDFA:
                 # Is it an accepting_state?
                 if bool(self.augmented_states & new_state):
                     self.accepting_states.update(next_state)
+                    self.accepting_dict[next_state] = new_state
 
                 # Repeat with this new state
                 self.CalcNewStates(new_state, next_state)
@@ -186,7 +189,7 @@ class DDFA:
     def BracketNode(self, node):
         # Node_a is epsilon
         node_a = Node(None, list(), list(), True)
-        self.iter += 1
+        # self.iter += 1
         node_b = self.ParseTree(node.a)
 
         is_nullable = node_a.nullable or node_b.nullable
@@ -208,13 +211,18 @@ class DDFA:
             try:
                 curr_state = self.trans_func[curr_state][symbol]
             except:
-                return 'No'
-                # if curr_state in self.accepting_states and symbol in self.trans_func['A']:
-                #     curr_state = self.trans_func['A'][symbol]
-                # else:
-                #     return 'No'
+                return 'None'
 
-        return f'Yes! {curr_state}' if curr_state in self.accepting_states else 'No'
+        if curr_state not in self.accepting_states:
+            return 'None'
+
+        gen_state = self.accepting_dict[curr_state]
+        token = next(
+            filter(lambda x: '#-' in x.value and x._id in gen_state, self.nodes))
+
+        token_type = token.value.split('#-')[1]
+
+        return f'{token_type}'
 
     def GraphAutomata(self):
         states = set(self.trans_func.keys())

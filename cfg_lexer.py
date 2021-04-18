@@ -169,7 +169,7 @@ class CFG:
 
         # Parse this new set
         parser = SetParser(value, self.characters)
-        value = parser.Parse(token_id=len(self.tokens))
+        value = parser.Parse(token_id=ident)
         token = Token(ident, list(value), context)
         self.tokens.append(token)
 
@@ -301,13 +301,16 @@ tree = parser.Parse(tokens)
 print(f'\nARBOL SINTÁCTICO:\n{tree}')
 
 symbols = set(
-    [x for x in '.ABCDEFH0123456789abcdefghijklmnopqrstuvwxyz()1234567890'])
+    [x for x in '.ABCDEFGH0123456789abcdefghijklmnopqrstuvwxyz()1234567890+-'])
 ddfa = DDFA(tree, symbols, '123469504712984371298651437129')
-print(ddfa.nodes)
-print('states:', ddfa.states)
-print('accepting states:', ddfa.accepting_states)
-print('augmented states:', ddfa.augmented_states)
-pprint(ddfa.trans_func)
-ddfa_regex = ddfa.EvalRegex('abb')
+
+# print(ddfa.nodes)
+# print('states:', ddfa.states)
+# print('accepting states:', ddfa.accepting_states)
+# print('accepting dict:', ddfa.accepting_dict)
+# print('augmented states:', ddfa.augmented_states)
+# pprint(ddfa.trans_func)
+
+ddfa_regex = ddfa.EvalRegex('adios')
 print(ddfa_regex)
 # ddfa.GraphAutomata()
