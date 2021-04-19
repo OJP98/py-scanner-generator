@@ -6,7 +6,6 @@ from utils import (
     GetCharValue
 )
 from set_parser import SetParser, SetGenerator
-from pprint import pprint
 from cfg_classes import *
 from math import inf
 from parsing import Parser
@@ -285,32 +284,3 @@ Tokens:
 {self.tokens}
 
 ''' + (f'Ignore: {self.ignore}' if self.ignore else '')
-
-
-cfg = CFG('input/grammar.cfg')
-parser = Parser(cfg)
-
-# pprint(cfg.tokens)
-
-tokens = parser.ToSingleExpression()
-
-# print(cfg)
-# print(tokens)
-
-tree = parser.Parse(tokens)
-print(f'\nARBOL SINTÁCTICO:\n{tree}')
-
-symbols = set(
-    [x for x in '.ABCDEFGH0123456789abcdefghijklmnopqrstuvwxyz()1234567890+-'])
-ddfa = DDFA(tree, symbols, '123469504712984371298651437129')
-
-# print(ddfa.nodes)
-# print('states:', ddfa.states)
-# print('accepting states:', ddfa.accepting_states)
-# print('accepting dict:', ddfa.accepting_dict)
-# print('augmented states:', ddfa.augmented_states)
-# pprint(ddfa.trans_func)
-
-ddfa_regex = ddfa.EvalRegex('adios')
-print(ddfa_regex)
-# ddfa.GraphAutomata()
