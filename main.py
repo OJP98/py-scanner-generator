@@ -1,7 +1,9 @@
-from cfg_lexer import CFG
-from parsing import Parser
-from direct_dfa import DDFA
+#!/usr/bin/python
+import sys
 import pickle
+from cfg_lexer import CFG
+from direct_dfa import DDFA
+from parsing import Parser
 
 program_title = '''
 
@@ -18,32 +20,46 @@ file_generaetd = '''
 scanner.py generated in output folder. You may run it as `python scanner.py` in your terminal. You may as well specify any file for the scanner to read in the program input; otherwise, test_input.txt will be taken as the default file.
 '''
 
-cfg = CFG('input/grammar.cfg')
-parser = Parser(cfg)
 
-# pprint(cfg.tokens)
+def DumpAutomata(automata):
+    pickle.dump(automata, open('./output/automata.p', 'wb'))
 
-tokens = parser.ToSingleExpression()
 
-# print(cfg)
-# print(tokens)
+if __name__ == "__main__":
 
-tree = parser.Parse(tokens)
-print(f'\nARBOL SINTÁCTICO:\n{tree}')
+    grammar_file = './input/grammar.cfg'
 
-symbols = set(
-    [x for x in '.ABCDEFGHOL0123456789abcdefghijklmnopqrstuvwxyz()1234567890+-'])
+    if len(sys.argv) > 1:
+        grammar_file = sys.argv[1]
 
-ddfa = DDFA(tree, symbols, '123469504712984371298651437129')
+    try:
+        cfg = CFG(grammar_file)
+    except:
+        print(f'\tERR: "{grammar_file}" file not found.')
+        exit(-1)
 
-# print(ddfa.nodes)
-# print('states:', ddfa.states)
-# print('accepting states:', ddfa.accepting_states)
-# print('accepting dict:', ddfa.accepting_dict)
-# print('augmented states:', ddfa.augmented_states)
-# pprint(ddfa.trans_func)
+    parser = Parser(cfg)
+    tokens = parser.ToSingleExpression()
+    tree = parser.Parse(tokens)
 
-ddfa_regex = ddfa.EvalRegex('adios')
-print(ddfa_regex)
-pickle.dump(ddfa, open('./output/automata.p', 'wb'))
-# ddfa.GraphAutomata()
+    print(f'ARBOL SINTÁCTICO:\n{tree}')
+
+    symbols = set(
+        [x for x in '.ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz()+-'])
+
+    # Direct DFA
+    ddfa = DDFA(tree, symbols, '123469504712984371298651437129')
+    DumpAutomata(ddfa)
+    eval_word = '1200.E-9'
+    ddfa_regex = ddfa.EvalRegex(eval_word)
+    print(f'\n"{eval_word}"\t=>\t{ddfa_regex}')
+
+    eval_word = 'nuevotokensiu'
+    ddfa_regex = ddfa.EvalRegex(eval_word)
+    print(f'"{eval_word}"\t=>\t{ddfa_regex}')
+
+    eval_word = 'AB(H)'
+    ddfa_regex = ddfa.EvalRegex(eval_word)
+    print(f'"{eval_word}"\t=>\t{ddfa_regex}')
+
+    # ddfa.GraphAutomata()

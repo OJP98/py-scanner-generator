@@ -89,7 +89,6 @@ class CFG:
                     self.Next()
 
                 elif 'END' in self.curr_line:
-                    print('END')
                     self.Next()
 
             elif '(.' in self.curr_line:
@@ -124,6 +123,10 @@ class CFG:
                 joined_set += curr_set
                 joined_set = joined_set[:-1]
                 self.GetKeyValue(joined_set, section)
+                self.Next()
+
+            elif '(.' in self.curr_line:
+                self.ReadComment()
                 self.Next()
 
             else:

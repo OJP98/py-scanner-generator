@@ -206,7 +206,7 @@ class DDFA:
         for symbol in word:
 
             if not symbol in self.symbols:
-                return 'No'
+                return 'None'
 
             try:
                 curr_state = self.trans_func[curr_state][symbol]
@@ -221,7 +221,6 @@ class DDFA:
             filter(lambda x: '#-' in x.value and x._id in gen_state, self.nodes))
 
         token_type = token.value.split('#-')[1]
-
         return f'{token_type}'
 
     def GraphAutomata(self):
