@@ -7,7 +7,7 @@ RAW_STATES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
 
 class DDFA:
-    def __init__(self, tree, symbols, regex):
+    def __init__(self, tree, symbols, keywords):
 
         # Useful for syntax tree
         self.nodes = list()
@@ -19,10 +19,12 @@ class DDFA:
         self.accepting_states = set()
         self.accepting_dict = dict()
         self.initial_state = 'A'
+        self.keywords = keywords
+        self.keywords_value = [
+            keyword.value.value for keyword in self.keywords]
 
         # Class properties
         self.tree = tree
-        self.regex = regex
         self.augmented_states = None
         self.iter = 1
 

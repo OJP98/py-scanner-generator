@@ -1,4 +1,5 @@
 import codecs
+import pickle
 from cfg_classes import VarType, Variable
 from re import findall
 
@@ -111,3 +112,7 @@ def WriteToFile(filename: str, content: str):
         _file.write(content)
 
     return f'File "{filename}" created!'
+
+
+def DumpAutomata(automata):
+    pickle.dump(automata, open('./output/automata.p', 'wb'))

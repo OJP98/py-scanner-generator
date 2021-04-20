@@ -6,8 +6,10 @@ class CodeGen(object):
     lf = '\n'
     tab = '    '
 
-    def __init__(self, output_dir):
+    def __init__(self, output_dir, tokens, keywords):
         self.output_dir = output_dir
+        self.tokens = tokens
+        self.keywords = keywords
         self.file = None
 
     def CreateFile(self):
@@ -36,6 +38,7 @@ class CodeGen(object):
 
     def WriteEvalFunction(self):
         self.NewMethod('EvalWord', 'word')
+
         self.WriteLine('curr_state = "A"', 1)
         self.WriteLine('for symbol in word:', 1)
 
@@ -52,6 +55,15 @@ class CodeGen(object):
             'token = next(filter(lambda x: "#-" in x.value and x._id in gen_state, aut.nodes))', 1)
 
         self.WriteLine('token_type = token.value.split("#-")[1]', 1)
+
+        for token in self.tokens:
+            if token.context:
+                self.WriteLine(
+                    f'if token_type == "{token.ident}" and word in aut.keywords_value:', 1)
+                self.WriteLine(
+                    f'keyword = next(filter(lambda x: x.value.value == word, aut.keywords))', 2)
+                self.WriteLine('return f"KEYWORD: {keyword.ident}"', 2)
+
         self.WriteLine('return f"{token_type}"', 1, 2)
 
     def WriteReadFileFunction(self):
@@ -71,21 +83,16 @@ class CodeGen(object):
         self.WriteLine('return [line for line in lines if line]', 1, 2)
 
     def GenerateScannerFile(self):
-        code_gen = CodeGen('output.py')
+        self.CreateFile()
+        self.WriteLine('import pickle', newlines=2)
+        self.WriteLine('global aut', newlines=2)
 
-        code_gen.CreateFile()
-        code_gen.WriteLine('import pickle', newlines=2)
-        code_gen.WriteLine('global aut', newlines=2)
+        self.WriteReadFileFunction()
 
-        code_gen.WriteReadFileFunction()
+        self.WriteEvalFunction()
 
-        code_gen.WriteEvalFunction()
+        self.ReadAutomataWithPickle()
 
-        code_gen.ReadAutomataWithPickle()
-
-        code_gen.WriteLine('words = ReadFile("./input/test.txt")')
-        code_gen.WriteLine('for word in words:')
-        code_gen.WriteLine('print(f"{word}\\t=> {EvalWord(word)}")', 1, 2)
-
-
-CodeGen('./output.py').GenerateScannerFile()
+        self.WriteLine('words = ReadFile("./input/test_input.txt")')
+        self.WriteLine('for word in words:')
+        self.WriteLine('print(f"{word}\\t=> {EvalWord(word)}")', 1, 2)

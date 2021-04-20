@@ -179,6 +179,7 @@ class CFG:
         ident, value = line.split('=')
         ident = ident.strip()
         value = value.strip().replace('.', '')
+        value = value.replace('"', '')
         value = Variable(VarType.STRING, value)
 
         # Create ident object
