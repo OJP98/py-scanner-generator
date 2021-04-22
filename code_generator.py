@@ -6,10 +6,9 @@ class CodeGen(object):
     lf = '\n'
     tab = '    '
 
-    def __init__(self, output_dir, tokens, keywords):
+    def __init__(self, output_dir, tokens):
         self.output_dir = output_dir
         self.tokens = tokens
-        self.keywords = keywords
         self.file = None
 
     def CreateFile(self):
@@ -37,54 +36,71 @@ class CodeGen(object):
             'aut = pickle.load(open("./output/automata.p", "rb"))', newlines=2)
 
     def WriteEvalFunction(self):
-        self.NewMethod('EvalWord', 'word')
+        self.NewMethod('EvalFile', 'chars')
 
         self.WriteLine('curr_state = "A"', 1)
-        self.WriteLine('for symbol in word:', 1)
+        self.WriteLine('token_val = ""', 1)
+        self.WriteLine('for symbol in chars:', 1, 2)
 
-        self.WriteLine('try:', 2)
+        self.WriteLine('if symbol in aut.trans_func[curr_state]:', 2)
+        self.WriteLine('token_val += symbol', 3)
         self.WriteLine('curr_state = aut.trans_func[curr_state][symbol]', 3)
-        self.WriteLine('except:', 2)
-        self.WriteLine('return "None"', 3)
+        self.WriteLine('continue', 3, 2)
 
-        self.WriteLine('if curr_state not in aut.accepting_states:', 1)
-        self.WriteLine('return "None"', 2)
-
-        self.WriteLine('gen_state = aut.accepting_dict[curr_state]', 1)
-        self.WriteLine(
-            'token = next(filter(lambda x: "#-" in x.value and x._id in gen_state, aut.nodes))', 1)
-
-        self.WriteLine('token_type = token.value.split("#-")[1]', 1)
+        self.file.write('''
+        if curr_state in aut.accepting_states:
+            gen_state = aut.accepting_dict[curr_state]
+            token = next(filter(lambda x: "#-" in x.value and x._id in gen_state, aut.nodes))
+            token_type = token.value.split("#-")[1]
+''')
 
         for token in self.tokens:
             if token.context:
                 self.WriteLine(
-                    f'if token_type == "{token.ident}" and word in aut.keywords_value:', 1)
+                    f'if token_type == "{token.ident}" and token_val in aut.keywords_value:', 3)
                 self.WriteLine(
-                    f'keyword = next(filter(lambda x: x.value.value == word, aut.keywords))', 2)
-                self.WriteLine('return f"KEYWORD: {keyword.ident}"', 2)
+                    f'keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))', 4)
+                self.WriteLine('token_type = f"KEYWORD: {keyword.ident}"', 4)
 
-        self.WriteLine('return f"{token_type}"', 1, 2)
+        self.WriteLine('else:', 2)
+        self.WriteLine('token_type = "None"', 3, 2)
+
+        self.file.write('''
+        print(f"{repr(token_val)}\\t=>\\t{token_type}")
+        token_val = symbol
+
+        if not symbol in aut.trans_func["A"]:
+            print(f"{repr(token_val)}\t=>\tNone")
+            token_val = ""
+            continue
+
+        curr_state = aut.trans_func["A"][symbol]
+''')
+
+    def WriteGetFileFunction(self):
+        self.WriteLine('file_name = "./input/test_input.txt"')
+        self.WriteLine('if len(sys.argv) > 1: file_name = sys.argv[1]')
 
     def WriteReadFileFunction(self):
         self.NewMethod('ReadFile', 'file_dir')
         self.WriteLine('try:', 1)
         self.WriteLine('curr_file = open(file_dir, "r")', 2)
         self.WriteLine('except:', 1)
-        self.WriteLine('print("\tERR: File not found!")', 2)
+        self.WriteLine('print("ERR: File not found!")', 2)
         self.WriteLine('exit()', 2)
 
-        self.WriteLine('lines = curr_file.readlines()', 1)
-        self.WriteLine(
-            'lines = [line.strip("\\n\\t\\r") for line in lines]', 1)
-        self.WriteLine('lines = [line.strip() for line in lines]', 1)
-        self.WriteLine('lines = " ".join(lines)', 1)
-        self.WriteLine('lines = lines.split(" ")', 1)
-        self.WriteLine('return [line for line in lines if line]', 1, 2)
+        self.WriteLine('lines = curr_file.read()', 1)
+        self.WriteLine('chars = list()', 1)
+        self.WriteLine('for line in lines:', 1)
+        self.WriteLine('for char in line:', 2)
+        self.WriteLine('chars.append(char)', 3)
+
+        self.WriteLine('return chars', 1, 2)
 
     def GenerateScannerFile(self):
         self.CreateFile()
-        self.WriteLine('import pickle', newlines=2)
+        self.WriteLine('import pickle')
+        self.WriteLine('import sys', newlines=2)
         self.WriteLine('global aut', newlines=2)
 
         self.WriteReadFileFunction()
@@ -93,6 +109,7 @@ class CodeGen(object):
 
         self.ReadAutomataWithPickle()
 
-        self.WriteLine('words = ReadFile("./input/test_input.txt")')
-        self.WriteLine('for word in words:')
-        self.WriteLine('print(f"{word}\\t=> {EvalWord(word)}")', 1, 2)
+        self.WriteGetFileFunction()
+
+        self.WriteLine('chars = ReadFile(file_name)')
+        self.WriteLine('EvalFile(chars)')

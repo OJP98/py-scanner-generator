@@ -20,7 +20,7 @@ tokens_generated = '''
 The tokens generated are the following: '''
 
 file_generated = '''
-scanner.py has been generated in the root folder. You may run it as `python scanner.py` in your terminal. You may as well specify any file for the scanner to read as a second input; otherwise, ./input/test_input.txt will be taken as the default file.
+scanner.py has been generated in the root folder. You may run it as `python scanner.py` in your terminal. You may as well specify any file for the scanner to read tokens from; otherwise, ./input/test_input.txt will be taken as the default file.
 
     usage:   $ python scanner.py [<your_file>]
     example: $ python scanner.py ./my_file.txt
@@ -36,8 +36,8 @@ if __name__ == "__main__":
 
     try:
         cfg = CFG(grammar_file)
-    except:
-        print(f'\tERR: "{grammar_file}" file not found.')
+    except Exception as e:
+        print(f'\tERR: "{grammar_file}" file not found. {e}')
         exit(-1)
 
     parser = Parser(cfg)
@@ -47,13 +47,14 @@ if __name__ == "__main__":
     # print(f'ARBOL SINTÁCTICO:\n{tree}')
 
     symbols = set(
-        [x for x in '.ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz()+-'])
+        [x for x in '(){}[].ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz+-_\'\"\n\r\t\\; '])
 
     # Direct DFA
     ddfa = DDFA(tree, symbols, cfg.keywords)
-    print(cfg.keywords)
     DumpAutomata(ddfa)
 
-    CodeGen('./scanner.py', cfg.tokens, cfg.keywords).GenerateScannerFile()
+    CodeGen('./scanner.py', cfg.tokens).GenerateScannerFile()
 
     print(file_generated)
+
+    # ddfa.GraphAutomata()

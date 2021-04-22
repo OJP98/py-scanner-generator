@@ -1,4 +1,5 @@
 import pickle
+import sys
 
 global aut
 
@@ -6,35 +7,49 @@ def ReadFile(file_dir):
     try:
         curr_file = open(file_dir, "r")
     except:
-        print("	ERR: File not found!")
+        print("ERR: File not found!")
         exit()
-    lines = curr_file.readlines()
-    lines = [line.strip("\n\t\r") for line in lines]
-    lines = [line.strip() for line in lines]
-    lines = " ".join(lines)
-    lines = lines.split(" ")
-    return [line for line in lines if line]
+    lines = curr_file.read()
+    chars = list()
+    for line in lines:
+        for char in line:
+            chars.append(char)
+    return chars
 
-def EvalWord(word):
+def EvalFile(chars):
     curr_state = "A"
-    for symbol in word:
-        try:
-            curr_state = aut.trans_func[curr_state][symbol]
-        except:
-            return "None"
-    if curr_state not in aut.accepting_states:
-        return "None"
-    gen_state = aut.accepting_dict[curr_state]
-    token = next(filter(lambda x: "#-" in x.value and x._id in gen_state, aut.nodes))
-    token_type = token.value.split("#-")[1]
-    if token_type == "ident" and word in aut.keywords_value:
-        keyword = next(filter(lambda x: x.value.value == word, aut.keywords))
-        return f"KEYWORD: {keyword.ident}"
-    return f"{token_type}"
+    token_val = ""
+    for symbol in chars:
 
+        if symbol in aut.trans_func[curr_state]:
+            token_val += symbol
+            curr_state = aut.trans_func[curr_state][symbol]
+            continue
+
+
+        if curr_state in aut.accepting_states:
+            gen_state = aut.accepting_dict[curr_state]
+            token = next(filter(lambda x: "#-" in x.value and x._id in gen_state, aut.nodes))
+            token_type = token.value.split("#-")[1]
+            if token_type == "ident" and token_val in aut.keywords_value:
+                keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))
+                token_type = f"KEYWORD: {keyword.ident}"
+        else:
+            token_type = "None"
+
+
+        print(f"{repr(token_val)}\t=>\t{token_type}")
+        token_val = symbol
+
+        if not symbol in aut.trans_func["A"]:
+            print(f"{repr(token_val)}	=>	None")
+            token_val = ""
+            continue
+
+        curr_state = aut.trans_func["A"][symbol]
 aut = pickle.load(open("./output/automata.p", "rb"))
 
-words = ReadFile("./input/test_input.txt")
-for word in words:
-    print(f"{word}\t=> {EvalWord(word)}")
-
+file_name = "./input/test_input.txt"
+if len(sys.argv) > 1: file_name = sys.argv[1]
+chars = ReadFile(file_name)
+EvalFile(chars)
