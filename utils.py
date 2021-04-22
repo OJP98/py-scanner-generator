@@ -3,6 +3,9 @@ import pickle
 from cfg_classes import VarType, Variable
 from re import findall
 
+CONTEXT_WORDS = ['ANY']
+ANY_SET = set([chr(char) for char in range(0, 255)])
+
 
 def GetTextInsideSymbols(string, init_symbol, end_symbol):
     start = string.find(init_symbol)
@@ -80,21 +83,26 @@ def GetCharValue(char):
 
 
 def GetElementType(string, char_set):
-    if '"' in string:
+
+    if string.count('"') == 2:
         string = string.replace('\"', '')
         val = set([chr(ord(char)) for char in string])
         return Variable(VarType.STRING, val)
 
-    if '\'' in string:
+    if string.count('\'') == 2:
         char = GetTextFromSingleQuotes(string)
         try:
             char = codecs.decode(char, 'unicode_escape')
             ord_ = ord(char)
         except:
-            raise Exception(f'Unvalid char: {string}')
+            raise Exception(f'Unvalid char in GetElementType: {string}')
 
         new_set = set(chr(ord_))
         return Variable(VarType.CHAR, new_set)
+
+    if string in CONTEXT_WORDS:
+        if 'ANY' == string:
+            return Variable(VarType.STRING, ANY_SET)
 
     if string.isdigit():
         return Variable(VarType.NUMBER, string)

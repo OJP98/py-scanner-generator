@@ -108,7 +108,7 @@ class SetParser:
         self.Next()
 
         while self.curr_char != None \
-                and self.curr_char.isalpha() and self.curr_char != ' ':
+                and self.curr_char.isalnum() and self.curr_char != ' ':
             word += self.curr_char
             self.Next()
 
@@ -140,7 +140,7 @@ class SetParser:
                 char = codecs.decode(var, 'unicode_escape')
                 ord_ = ord(char)
             except:
-                raise Exception(f'Unvalid char: {var}')
+                raise Exception(f'Unvalid char in Generate var: {var}')
 
             return [Variable(VarType.CHAR, set(chr(ord_)))]
 

@@ -15,7 +15,6 @@ CONTEXT_WORDS = ['EXCEPT', 'ANY', 'IGNORE', 'IGNORECASE']
 SCANNER_WORDS = ['COMPILER', 'CHARACTERS', 'IGNORE',
                  'KEYWORDS', 'TOKENS', 'END', 'PRODUCTIONS']
 TOKEN_KEYWORDS = ['EXCEPT', 'KEYWORDS']
-ANY_SET = set([chr(char) for char in range(0, 65535)])
 
 
 class CFG:
@@ -249,7 +248,7 @@ class CFG:
         val2 = GetElementType(values[1], self.characters)
 
         if not val1 or not val2:
-            raise Exception(f'Unvalid char: {string}')
+            raise Exception(f'Unvalid char in Char: {string}')
 
         if val1.type != VarType.CHAR or val2.type != VarType.CHAR:
             raise Exception(

@@ -70,7 +70,7 @@ class CodeGen(object):
         token_val = symbol
 
         if not symbol in aut.trans_func["A"]:
-            print(f"{repr(token_val)}\t=>\tNone")
+            print(f"{repr(token_val)}\\t=>\\tNone")
             token_val = ""
             continue
 
