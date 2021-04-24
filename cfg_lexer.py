@@ -43,7 +43,7 @@ class CFG:
 
     def ReadFile(self):
         try:
-            self.file = open(self.filepath, 'r')
+            self.file = open(self.filepath, 'r', encoding='latin-1')
         except:
             raise Exception('File not found!')
         finally:
@@ -91,7 +91,7 @@ class CFG:
                 elif 'END' in self.curr_line:
                     self.Next()
 
-            elif '(.' in self.curr_line:
+            elif '(.' in self.curr_line[:2]:
                 self.ReadComment()
                 self.Next()
 
@@ -104,7 +104,7 @@ class CFG:
             curr_set = ' '.join(self.curr_line)
 
             # Is there a comment?
-            if '(.' in curr_set:
+            if '(.' in curr_set[:2]:
                 self.ReadComment()
 
             # Does the set contains both = and .
@@ -139,7 +139,8 @@ class CFG:
 
     def ReadIgnore(self):
         curr_set = ' '.join(self.curr_line)
-        line = curr_set.split('IGNORE', 1)[1]
+        # TODO: check if it's just IGNORE or IGNORE SET
+        line = curr_set.split('IGNORE SET', 1)[1]
         line = line.replace('.', ' ')
         value = self.Set(line)
 
@@ -155,7 +156,7 @@ class CFG:
             self.TokenDecl(line)
 
     def TokenDecl(self, line):
-        ident, value = line.split('=')
+        ident, value = line.split('=', 1)
         ident = ident.strip()
         value = value.strip()
         context = None
@@ -165,6 +166,7 @@ class CFG:
             raise Exception(f'Ident "{ident}" declared twice!')
 
         # Are there any keywords?
+        # TODO: Except might be lower case or upper case
         if 'EXCEPT' in value:
             kwd_index = value.index('EXCEPT')
             context = value[kwd_index:]
@@ -177,7 +179,7 @@ class CFG:
         self.tokens.append(token)
 
     def KeywordDecl(self, line):
-        ident, value = line.split('=')
+        ident, value = line.split('=', 1)
         ident = ident.strip()
         value = value.strip().replace('.', '')
         value = value.replace('"', '')
@@ -193,7 +195,7 @@ class CFG:
         self.keywords.append(keyword)
 
     def SetDecl(self, line):
-        key, value = line.split('=')
+        key, value = line.split('=', 1)
 
         key = key.strip()
         value = self.Set(value.strip())
@@ -209,6 +211,8 @@ class CFG:
         temp = list()
 
         while string:
+            # TODO: There might be an operator in between strings
+            # i.e.: "+_()[]{}|."
             plus_index = string.find('+')
             minus_index = string.find('-')
 
@@ -280,7 +284,7 @@ class CFG:
             self.allchars.update(character.value)
         for token in self.tokens:
             for var in token.value:
-                if var == VarType.CHAR or var == VarType.STRING:
+                if var.type == VarType.CHAR or var.type == VarType.STRING:
                     self.allchars.update(var.value)
 
         return self.allchars

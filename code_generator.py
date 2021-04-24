@@ -58,21 +58,23 @@ class CodeGen(object):
         for token in self.tokens:
             if token.context:
                 self.WriteLine(
-                    f'if token_type == "{token.ident}" and token_val in aut.keywords:', 3)
+                    f'if token_type == "{token.ident}" and token_val in aut.keywords_value:', 3)
                 self.WriteLine(
-                    f'keyword = aut.keywords[token_val]', 4)
+                    f'keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))', 4)
                 self.WriteLine('token_type = f"KEYWORD: {keyword}"', 4)
 
         self.WriteLine('else:', 2)
         self.WriteLine('token_type = "None"', 3, 2)
 
         self.file.write('''
-        print(f"{repr(token_val)}\\t=>\\t{token_type}")
+        if token_val:
+            print(f"{repr(token_val)}\\t=>\\t{token_type}")
         token_val = symbol
 
         if not symbol in aut.trans_func["A"]:
             print(f"{repr(token_val)}\\t=>\\tNone")
             token_val = ""
+            curr_state = "A"
             continue
 
         curr_state = aut.trans_func["A"][symbol]

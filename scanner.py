@@ -31,19 +31,24 @@ def EvalFile(chars):
             gen_state = aut.accepting_dict[curr_state]
             token = next(filter(lambda x: "#-" in x.value and x._id in gen_state, aut.nodes))
             token_type = token.value.split("#-")[1]
-            if token_type == "ident" and token_val in aut.keywords:
-                keyword = aut.keywords[token_val]
+            if token_type == "ident" and token_val in aut.keywords_value:
+                keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))
+                token_type = f"KEYWORD: {keyword}"
+            if token_type == "hexnumber" and token_val in aut.keywords_value:
+                keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))
                 token_type = f"KEYWORD: {keyword}"
         else:
             token_type = "None"
 
 
-        print(f"{repr(token_val)}\t=>\t{token_type}")
+        if token_val:
+            print(f"{repr(token_val)}\t=>\t{token_type}")
         token_val = symbol
 
         if not symbol in aut.trans_func["A"]:
             print(f"{repr(token_val)}\t=>\tNone")
             token_val = ""
+            curr_state = "A"
             continue
 
         curr_state = aut.trans_func["A"][symbol]

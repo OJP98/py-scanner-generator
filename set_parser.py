@@ -150,7 +150,8 @@ class SetParser:
                 res.append(Variable(VarType.STRING, set(char)))
                 res.append(Variable(VarType.APPEND, '.'))
 
-            res.pop()
+            if self.last_char not in self.symbol_ignore:
+                res.pop()
             return res
 
 
@@ -161,6 +162,7 @@ class SetGenerator:
         self.curr_var = None
         self.prev_var = None
         self.res_set = None
+        print('EVALUATING SET:', set_)
         self.Next()
 
     def Next(self):

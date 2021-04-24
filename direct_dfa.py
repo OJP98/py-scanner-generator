@@ -7,7 +7,7 @@ RAW_STATES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
 
 class DDFA:
-    def __init__(self, tree, symbols, keywords):
+    def __init__(self, tree, symbols, keywords, ignore_set):
 
         # Useful for syntax tree
         self.nodes = list()
@@ -22,6 +22,7 @@ class DDFA:
         self.keywords = keywords
         self.keywords_value = [
             keyword.value.value for keyword in self.keywords]
+        self.ignore_set = ignore_set
 
         # Class properties
         self.tree = tree
@@ -51,7 +52,7 @@ class DDFA:
         # Filter the nodes that have a symbol
         self.nodes = list(filter(lambda x: x._id, self.nodes))
 
-        # TODO: get all the nodes with the symbol '#'.
+        # Get all the nodes with the symbol '#'.
         self.augmented_states = list(
             filter(lambda x: '#-' in x.value, self.nodes))
 
@@ -66,7 +67,7 @@ class DDFA:
         if not self.states:
             self.states.append(set(state))
 
-            # TODO: if state in set(self.augmented_states).
+            # If state in set(self.augmented_states).
             if state in list(self.augmented_states):
                 self.accepting_dict[curr_state] = state
                 self.accepting_states.update(curr_state)
