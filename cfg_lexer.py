@@ -5,11 +5,12 @@ from utils import (
     GetIdentValue,
     GetCharValue
 )
-from set_parser import SetParser, SetGenerator
+from set_parser import TokenExpression, SetGenerator, SetDecl
 from cfg_classes import *
 from math import inf
 from parsing import Parser
 from direct_dfa import DDFA
+from pprint import pprint
 
 CONTEXT_WORDS = ['EXCEPT', 'ANY', 'IGNORE', 'IGNORECASE']
 SCANNER_WORDS = ['COMPILER', 'CHARACTERS', 'IGNORE',
@@ -139,11 +140,9 @@ class CFG:
 
     def ReadIgnore(self):
         curr_set = ' '.join(self.curr_line)
-        # TODO: check if it's just IGNORE or IGNORE SET
-        line = curr_set.split('IGNORE SET', 1)[1]
+        line = curr_set.split('IGNORE', 1)[1]
         line = line.replace('.', ' ')
-        value = self.Set(line)
-
+        value = SetDecl(line, self.characters).Set()
         final_set = SetGenerator(value, self.characters).GenerateSet()
         self.ignore = final_set
 
@@ -173,7 +172,7 @@ class CFG:
             value = value[:kwd_index]
 
         # Parse this new set
-        parser = SetParser(value, self.characters)
+        parser = TokenExpression(value, self.characters)
         value = parser.Parse(token_id=ident)
         token = Token(ident, list(value), context)
         self.tokens.append(token)
@@ -198,81 +197,10 @@ class CFG:
         key, value = line.split('=', 1)
 
         key = key.strip()
-        value = self.Set(value.strip())
+        set_decl = SetDecl(value, self.characters)
+        value = list(set_decl.Set())
         final_set = SetGenerator(value, self.characters).GenerateSet()
         self.characters.append(Character(key, final_set))
-
-    def Set(self, value):
-        value = value.replace(' ', '')
-        bset = self.BasicSet(value)
-        return bset
-
-    def BasicSet(self, string):
-        temp = list()
-
-        while string:
-            # TODO: There might be an operator in between strings
-            # i.e.: "+_()[]{}|."
-            plus_index = string.find('+')
-            minus_index = string.find('-')
-
-            plus_index = plus_index if plus_index != -1 else inf
-            minus_index = minus_index if minus_index != -1 else inf
-
-            if plus_index < minus_index:
-                char = self.Char(string[:plus_index], self.characters)
-                temp.append(char)
-                temp.append(Variable(VarType.UNION, '+'))
-                string = string[plus_index+1:]
-
-            elif minus_index < plus_index:
-                char = self.Char(string[:minus_index], self.characters)
-                temp.append(char)
-                temp.append(Variable(VarType.DIFFERENCE, '-'))
-                string = string[minus_index+1:]
-
-            else:
-                char = self.Char(string, self.characters)
-                temp.append(char)
-                break
-
-        return temp
-
-    def Char(self, string, item_set):
-
-        values = string.split('..')
-
-        if len(values) == 1:
-            val = values[0]
-            return GetElementType(val, self.characters)
-
-        if len(values) != 2:
-            raise Exception(
-                f'In CHARACTERS, found more than one range instance: {string}')
-
-        val1 = GetElementType(values[0], self.characters)
-        val2 = GetElementType(values[1], self.characters)
-
-        if not val1 or not val2:
-            raise Exception(f'Unvalid char in Char: {string}')
-
-        if val1.type != VarType.CHAR or val2.type != VarType.CHAR:
-            raise Exception(
-                f'Unvalid char range {string}')
-
-        val1 = list(val1.value)[0]
-        val2 = list(val2.value)[0]
-        range1 = ord(val1)
-        range2 = ord(val2)
-
-        if range1 > range2:
-            range1, range2 = range2, range1
-
-        # Create a new list with all the chars in the range
-        char_range = set([chr(char)
-                          for char in range(range1, range2 + 1)])
-
-        return Variable(VarType.CHAR, char_range)
 
     def GenerateSet(self, eval_set):
         generator = SetGenerator(eval_set, self.characters)

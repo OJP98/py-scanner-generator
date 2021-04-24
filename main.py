@@ -34,19 +34,19 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         grammar_file = sys.argv[1]
 
-    cfg = CFG(grammar_file)
+    # cfg = CFG(grammar_file)
 
-#     try:
-#         cfg = CFG(grammar_file)
-#     except FileNotFoundError as e:
-#         print(f'\tERR: "{grammar_file} file not found."')
-#     except Exception as e:
-#         print(f'\tERR: {e}')
-#         exit(-1)
+    try:
+        cfg = CFG(grammar_file)
+    except FileNotFoundError as e:
+        print(f'\tERR: "{grammar_file} file not found."')
+    except Exception as e:
+        print(f'\tERR: {e}')
+        exit(-1)
 
     allchars = cfg.GetAllChars()
-    print(cfg)
-    print(allchars)
+    # print(cfg)
+    # print(allchars)
     parser = Parser(cfg)
     tokens = parser.ToSingleExpression()
     tree = parser.Parse(tokens)
