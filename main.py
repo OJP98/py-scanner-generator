@@ -40,20 +40,19 @@ if __name__ == "__main__":
         print(f'\tERR: "{grammar_file}" file not found. {e}')
         exit(-1)
 
+    allchars = cfg.GetAllChars()
     parser = Parser(cfg)
     tokens = parser.ToSingleExpression()
     tree = parser.Parse(tokens)
 
     # print(f'ARBOL SINTÁCTICO:\n{tree}')
-
-    symbols = set(
-        [x for x in '(){}[].ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz+-_\'\"\n\r\t\\; '])
+    # print(tokens)
 
     # Direct DFA
-    ddfa = DDFA(tree, symbols, cfg.keywords)
+    ddfa = DDFA(tree, allchars, cfg.keywords)
     DumpAutomata(ddfa)
 
-    CodeGen('./scanner.py', cfg.tokens).GenerateScannerFile()
+    CodeGen('./scanner.py', cfg.tokens, ddfa).GenerateScannerFile()
 
     print(file_generated)
 

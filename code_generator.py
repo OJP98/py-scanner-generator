@@ -6,9 +6,10 @@ class CodeGen(object):
     lf = '\n'
     tab = '    '
 
-    def __init__(self, output_dir, tokens):
+    def __init__(self, output_dir, tokens, ddfa):
         self.output_dir = output_dir
         self.tokens = tokens
+        self.ddfa = ddfa
         self.file = None
 
     def CreateFile(self):
@@ -57,10 +58,10 @@ class CodeGen(object):
         for token in self.tokens:
             if token.context:
                 self.WriteLine(
-                    f'if token_type == "{token.ident}" and token_val in aut.keywords_value:', 3)
+                    f'if token_type == "{token.ident}" and token_val in aut.keywords:', 3)
                 self.WriteLine(
-                    f'keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))', 4)
-                self.WriteLine('token_type = f"KEYWORD: {keyword.ident}"', 4)
+                    f'keyword = aut.keywords[token_val]', 4)
+                self.WriteLine('token_type = f"KEYWORD: {keyword}"', 4)
 
         self.WriteLine('else:', 2)
         self.WriteLine('token_type = "None"', 3, 2)
@@ -97,11 +98,62 @@ class CodeGen(object):
 
         self.WriteLine('return chars', 1, 2)
 
+    def WriteAutomataClass(self):
+        self.WriteLine(f'''
+class Automata:
+    def __init__(self):
+        self.trans_func = dict()
+        self.accepting_states = set()
+        self.accepting_dict = dict()
+        self.nodes = list()
+        self.keywords = dict()
+
+    def AddTransition(self, state, value):
+        self.trans_func[state] = value
+
+    def AddAcceptingState(self, new_state, value):
+        self.accepting_states.update(new_state)
+        self.accepting_dict[new_state] = value
+
+    def AddNode(self, _id, value):
+        self.nodes.append(Node(_id, value))
+
+    def AddKeyword(self, keyword, value):
+        self.keywords[keyword] = value
+
+
+class Node:
+    def __init__(self, _id, value):
+        self._id = _id
+        self.value = value
+
+aut = Automata()''')
+
+        for state, value in self.ddfa.trans_func.items():
+            self.WriteLine(f'aut.AddTransition("{state}", {value})')
+
+        self.WriteLine('\n# Add the accepting states')
+        for state, value in self.ddfa.accepting_dict.items():
+            self.WriteLine(f'aut.AddAcceptingState("{state}", {value})')
+
+        self.WriteLine('\n# Add the nodes of the accepting states')
+        for node in self.ddfa.nodes:
+            if '#-' in node.value:
+                self.WriteLine(f'aut.AddNode({node._id}, "{node.value}")')
+
+        self.WriteLine('\n# Finally, add the keywords')
+        for keyword in self.ddfa.keywords:
+            self.WriteLine(
+                f'aut.AddKeyword("{keyword.ident}", "{keyword.value.value}")')
+        self.WriteLine('\n')
+
     def GenerateScannerFile(self):
         self.CreateFile()
         self.WriteLine('import pickle')
         self.WriteLine('import sys', newlines=2)
         self.WriteLine('global aut', newlines=2)
+
+        # self.WriteAutomataClass()
 
         self.WriteReadFileFunction()
 

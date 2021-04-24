@@ -4,7 +4,7 @@ from cfg_classes import VarType, Variable
 from re import findall
 
 CONTEXT_WORDS = ['ANY']
-ANY_SET = set([chr(char) for char in range(0, 255)])
+ANY_SET = set([chr(char) for char in range(0, 256)])
 
 
 def GetTextInsideSymbols(string, init_symbol, end_symbol):

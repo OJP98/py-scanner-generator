@@ -33,6 +33,7 @@ class CFG:
         self.Next()
 
         self.ReadLines()
+        self.allchars = set()
 
     def Next(self):
         try:
@@ -130,6 +131,7 @@ class CFG:
 
             else:
                 print('POSIBLE ERROR:', curr_set)
+                self.Next()
 
     def ReadComment(self):
         while not '.)' in self.curr_line:
@@ -272,6 +274,16 @@ class CFG:
         generator = SetGenerator(eval_set, self.characters)
         generated_set = generator.GenerateSet()
         return generated_set
+
+    def GetAllChars(self):
+        for character in self.characters:
+            self.allchars.update(character.value)
+        for token in self.tokens:
+            for var in token.value:
+                if var == VarType.CHAR or var == VarType.STRING:
+                    self.allchars.update(var.value)
+
+        return self.allchars
 
     def __repr__(self):
         return f'''
