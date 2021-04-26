@@ -19,7 +19,7 @@ class TokenExpression:
         self.curr_char = None
         self.prev_char = None
         self.last_char = None
-        self.symbol_ignore = ['(', '[', '{', '|', '+', '-']
+        self.symbol_ignore = ['(', '[', '{', '|']
         self.closing_symbols = ['{', '(', '[']
         self.curr_set = set_
         self.Next()
@@ -153,8 +153,8 @@ class TokenExpression:
                 res.append(Variable(VarType.STRING, set(char)))
                 res.append(Variable(VarType.APPEND, '.'))
 
-            # if self.last_char not in self.symbol_ignore:
-            res.pop()
+            if self.last_char not in self.closing_symbols:
+                res.pop()
             return res
 
 

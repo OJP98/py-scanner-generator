@@ -110,7 +110,7 @@ class CFG:
                 self.ReadComment()
 
             # Does the set contains both = and .
-            if '=' in curr_set and '.' == curr_set[-1]:
+            if '=' in curr_set and '.' == curr_set[-1] and joined_set != '':
                 curr_set = curr_set[:-1]
                 self.GetKeyValue(curr_set, section)
                 self.Next()

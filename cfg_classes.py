@@ -101,14 +101,6 @@ class Append:
         return f'{self.a} . {self.b}'
 
 
-class Group:
-    def __init__(self, a):
-        self.a = a
-
-    def __repr__(self):
-        return f'({self.a})'
-
-
 class Symbol:
     def __init__(self, value, type_=None, ident_name=None):
         self.value = value

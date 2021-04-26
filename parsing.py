@@ -63,21 +63,21 @@ class Parser:
 
         return res
 
-    def Expression(self):
+    def Term(self):
         res = self.NewGroup()
 
-        while self.curr_token != None and \
-                (
-                    self.curr_token.type == VarType.APPEND or
-                    self.curr_token.type == VarType.OR
-                ):
-            if self.curr_token.type == VarType.OR:
-                self.Next()
-                res = Or(res, self.Expression())
+        while self.curr_token != None and self.curr_token.type == VarType.APPEND:
+            self.Next()
+            res = Append(res, self.NewGroup())
 
-            elif self.curr_token.type == VarType.APPEND:
-                self.Next()
-                res = Append(res, self.Expression())
+        return res
+
+    def Expression(self):
+        res = self.Term()
+
+        while self.curr_token != None and self.curr_token.type == VarType.OR:
+            self.Next()
+            res = Or(res, self.Expression())
 
         return res
 
