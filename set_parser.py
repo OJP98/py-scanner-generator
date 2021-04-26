@@ -125,7 +125,7 @@ class TokenExpression:
         var = self.curr_char
         self.Next()
 
-        while self.curr_char and self.curr_char != ' ':
+        while self.curr_char != None:
             var += self.curr_char
             self.Next()
 
@@ -153,8 +153,8 @@ class TokenExpression:
                 res.append(Variable(VarType.STRING, set(char)))
                 res.append(Variable(VarType.APPEND, '.'))
 
-            if self.last_char not in self.symbol_ignore:
-                res.pop()
+            # if self.last_char not in self.symbol_ignore:
+            res.pop()
             return res
 
 
@@ -230,7 +230,7 @@ class SetDecl:
         var = self.curr_char
         self.Next()
 
-        while self.curr_char and self.curr_char != ' ':
+        while self.curr_char != None:
             var += self.curr_char
             self.Next()
 

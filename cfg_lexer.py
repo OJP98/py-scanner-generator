@@ -12,10 +12,8 @@ from parsing import Parser
 from direct_dfa import DDFA
 from pprint import pprint
 
-CONTEXT_WORDS = ['EXCEPT', 'ANY', 'IGNORE', 'IGNORECASE']
 SCANNER_WORDS = ['COMPILER', 'CHARACTERS', 'IGNORE',
                  'KEYWORDS', 'TOKENS', 'END', 'PRODUCTIONS']
-TOKEN_KEYWORDS = ['EXCEPT', 'KEYWORDS']
 
 
 class CFG:
@@ -80,6 +78,7 @@ class CFG:
 
                 elif 'TOKENS' in self.curr_line:
                     self.Next()
+                    print('\n', '='*20, 'TOKENS', '='*20)
                     self.ReadSection('TOKENS')
 
                 elif 'IGNORE' in self.curr_line:
@@ -90,6 +89,8 @@ class CFG:
                     self.Next()
 
                 elif 'END' in self.curr_line:
+                    end_compiler_name = self.curr_line[self.curr_line.index(
+                        'END')+1]
                     self.Next()
 
             elif '(.' in self.curr_line[:2]:
@@ -131,7 +132,7 @@ class CFG:
                 self.Next()
 
             else:
-                print('POSIBLE ERROR:', curr_set)
+                print('WARNING: Ignored statement:', curr_set)
                 self.Next()
 
     def ReadComment(self):
@@ -141,7 +142,8 @@ class CFG:
     def ReadIgnore(self):
         curr_set = ' '.join(self.curr_line)
         line = curr_set.split('IGNORE', 1)[1]
-        line = line.replace('.', ' ')
+        line = line.replace('.', '')
+
         value = SetDecl(line, self.characters).Set()
         final_set = SetGenerator(value, self.characters).GenerateSet()
         self.ignore = final_set
@@ -175,6 +177,8 @@ class CFG:
         parser = TokenExpression(value, self.characters)
         value = parser.Parse(token_id=ident)
         token = Token(ident, list(value), context)
+        print()
+        print(f'{token}')
         self.tokens.append(token)
 
     def KeywordDecl(self, line):
@@ -199,7 +203,11 @@ class CFG:
         key = key.strip()
         set_decl = SetDecl(value, self.characters)
         value = list(set_decl.Set())
+        print()
+        print(f'CRUDO:\n{key}: {value}')
         final_set = SetGenerator(value, self.characters).GenerateSet()
+        print()
+        print(f'GENERADO\n{key}: {final_set}')
         self.characters.append(Character(key, final_set))
 
     def GenerateSet(self, eval_set):

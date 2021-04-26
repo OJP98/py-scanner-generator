@@ -5,6 +5,7 @@ from direct_dfa import DDFA
 from parsing import Parser
 from utils import DumpAutomata
 from code_generator import CodeGen
+from pprint import pprint
 
 program_title = '''
 
@@ -28,7 +29,7 @@ scanner.py has been generated in the root folder. You may run it as `python scan
 
 if __name__ == "__main__":
 
-    print(program_title)
+    # print(program_title)
     grammar_file = './input/grammar.cfg'
 
     if len(sys.argv) > 1:
@@ -45,13 +46,12 @@ if __name__ == "__main__":
         exit(-1)
 
     allchars = cfg.GetAllChars()
-    # print(cfg)
-    # print(allchars)
     parser = Parser(cfg)
     tokens = parser.ToSingleExpression()
     tree = parser.Parse(tokens)
 
-    # print(f'ARBOL SINTÁCTICO:\n{tree}')
+    print('\n\n', '='*20, 'ARBOL SINTÁCTICO', '='*20, '\n')
+    pprint(tree)
     # print(tokens)
 
     # Direct DFA
@@ -60,6 +60,7 @@ if __name__ == "__main__":
 
     CodeGen('./scanner.py', cfg.tokens, ddfa).GenerateScannerFile()
 
+    print(program_title)
     print(file_generated)
 
     # ddfa.GraphAutomata()

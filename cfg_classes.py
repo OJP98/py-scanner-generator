@@ -62,7 +62,6 @@ class Variable:
         if self.name:
             return f'{self.type.name}: {self.name}'
         return self.type.name + (f':{self.value}' if self.value != None else '')
-        # return self.type.name
 
 
 # __________NODE TYPES__________
@@ -100,6 +99,14 @@ class Append:
     def __repr__(self):
         # return f'({self.a} . {self.b})'
         return f'{self.a} . {self.b}'
+
+
+class Group:
+    def __init__(self, a):
+        self.a = a
+
+    def __repr__(self):
+        return f'({self.a})'
 
 
 class Symbol:

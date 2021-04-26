@@ -31,9 +31,6 @@ def EvalFile(chars):
             gen_state = aut.accepting_dict[curr_state]
             token = next(filter(lambda x: "#-" in x.value and x._id in gen_state, aut.nodes))
             token_type = token.value.split("#-")[1]
-            if token_type == "ident" and token_val in aut.keywords_value:
-                keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))
-                token_type = f"KEYWORD: {keyword}"
         else:
             token_type = "None"
 

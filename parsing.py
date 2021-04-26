@@ -73,11 +73,11 @@ class Parser:
                 ):
             if self.curr_token.type == VarType.OR:
                 self.Next()
-                res = Or(res, self.NewGroup())
+                res = Or(res, self.Expression())
 
             elif self.curr_token.type == VarType.APPEND:
                 self.Next()
-                res = Append(res, self.NewGroup())
+                res = Append(res, self.Expression())
 
         return res
 
