@@ -129,7 +129,5 @@ dmypy.json
 .pyre/
 
 # Local directories
-/input/*
-!/input/.gitkeep
 /output/*
 !/output/.gitkeep
