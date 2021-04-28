@@ -38,6 +38,9 @@ def EvalFile(chars):
             if token_type == "ident" and token_val in aut.keywords_value:
                 keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))
                 token_type = f"KEYWORD: {keyword}"
+            if token_type == "hexnumber" and token_val in aut.keywords_value:
+                keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))
+                token_type = f"KEYWORD: {keyword}"
         else:
             token_type = "None"
 
