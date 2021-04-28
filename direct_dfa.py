@@ -202,28 +202,6 @@ class DDFA:
         self.nodes.append(new_node)
         return new_node
 
-    def EvalRegex(self, word):
-        curr_state = 'A'
-        for symbol in word:
-
-            if not symbol in self.symbols:
-                return 'None'
-
-            try:
-                curr_state = self.trans_func[curr_state][symbol]
-            except:
-                return 'None'
-
-        if curr_state not in self.accepting_states:
-            return 'None'
-
-        gen_state = self.accepting_dict[curr_state]
-        token = next(
-            filter(lambda x: '#-' in x.value and x._id in gen_state, self.nodes))
-
-        token_type = token.value.split('#-')[1]
-        return f'{token_type}'
-
 class Node:
     def __init__(self, _id, firstpos=None, lastpos=None, nullable=False, value=None, c1=None, c2=None):
         self._id = _id
