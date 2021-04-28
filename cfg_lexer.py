@@ -25,7 +25,7 @@ class CFG:
         self.characters = list()
         self.keywords = list()
         self.tokens = list()
-        self.ignore = None
+        self.ignore = set()
 
         self.file_lines = self.ReadFile()
         self.curr_line = None
