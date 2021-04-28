@@ -42,6 +42,10 @@ class CodeGen(object):
         self.WriteLine('curr_state = "A"', 1)
         self.WriteLine('token_val = ""', 1)
         self.WriteLine('for symbol in chars:', 1, 2)
+        self.WriteLine('''
+        if symbol in aut.ignore_set:
+            continue
+''')
 
         self.WriteLine('if symbol in aut.trans_func[curr_state]:', 2)
         self.WriteLine('token_val += symbol', 3)

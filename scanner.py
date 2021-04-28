@@ -21,6 +21,10 @@ def EvalFile(chars):
     token_val = ""
     for symbol in chars:
 
+
+        if symbol in aut.ignore_set:
+            continue
+
         if symbol in aut.trans_func[curr_state]:
             token_val += symbol
             curr_state = aut.trans_func[curr_state][symbol]
