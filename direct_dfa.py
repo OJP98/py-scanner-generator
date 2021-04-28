@@ -1,7 +1,5 @@
 from pprint import pprint
 from utils import WriteToFile
-from pythomata import SimpleDFA
-from graphviz import Digraph
 
 RAW_STATES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
@@ -203,43 +201,6 @@ class DDFA:
                         is_nullable, '|', node_a, node_b)
         self.nodes.append(new_node)
         return new_node
-
-    def EvalRegex(self, word):
-        curr_state = 'A'
-        for symbol in word:
-
-            if not symbol in self.symbols:
-                return 'None'
-
-            try:
-                curr_state = self.trans_func[curr_state][symbol]
-            except:
-                return 'None'
-
-        if curr_state not in self.accepting_states:
-            return 'None'
-
-        gen_state = self.accepting_dict[curr_state]
-        token = next(
-            filter(lambda x: '#-' in x.value and x._id in gen_state, self.nodes))
-
-        token_type = token.value.split('#-')[1]
-        return f'{token_type}'
-
-    def GraphAutomata(self):
-        states = set(self.trans_func.keys())
-        alphabet = set(self.symbols)
-
-        dfa = SimpleDFA(states, alphabet, self.initial_state,
-                        self.accepting_states, self.trans_func)
-
-        graph = dfa.trim().to_graphviz()
-        graph.attr(rankdir='LR')
-
-        source = graph.source
-        WriteToFile('./output/DirectDFA.gv', source)
-        graph.render('./output/DirectDFA.gv', format='pdf', view=True)
-
 
 class Node:
     def __init__(self, _id, firstpos=None, lastpos=None, nullable=False, value=None, c1=None, c2=None):
