@@ -19,10 +19,10 @@ def ReadFile(file_dir):
 def EvalFile(chars):
     curr_state = "A"
     token_val = ""
-    for symbol in chars:
+    for i, symbol in enumerate(chars):
 
 
-        if symbol in aut.ignore_set:
+        if symbol in aut.ignore_set and i < len(chars)-1:
             continue
 
         if symbol in aut.trans_func[curr_state]:

@@ -41,9 +41,9 @@ class CodeGen(object):
 
         self.WriteLine('curr_state = "A"', 1)
         self.WriteLine('token_val = ""', 1)
-        self.WriteLine('for symbol in chars:', 1, 2)
+        self.WriteLine('for i, symbol in enumerate(chars):', 1, 2)
         self.WriteLine('''
-        if symbol in aut.ignore_set:
+        if symbol in aut.ignore_set and i < len(chars)-1:
             continue
 ''')
 
