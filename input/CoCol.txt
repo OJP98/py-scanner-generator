@@ -1,12 +1,9 @@
-"hola"'a''/t'		CHR(15) CHR(100) (.hola.) holaOscariño adios
+string "hola" char 'a' y '/t' char CHR(15) CHR(100) charrange CHR(12345)..CHR(41320)
+(.// comentario .)
+"EntreComillas!"
+{grupo ? nogrupo}
+[GRUPO ? nogrupo] identfinal		tab
 
 
 
-
-a
-
-
-
-
-
-
+1234

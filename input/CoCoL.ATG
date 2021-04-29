@@ -11,18 +11,28 @@ tab = CHR(9).
 ignore = cr+lf+tab.
 comillas = CHR(34).
 stringletter = ANY-comillas-ignore.
-
 operadores ="+-=()[]{}|.<>".
 MyANY = ANY-operadores.
 
+KEYWORDS
+ignore = "IGNORE".
+end = "END".
+any = "ANY".
+except = "EXCEPT".
+keywords = "KEYWORDS".
+tokens = "TOKENS".
+characters = "CHARACTERS".
+compiler = "COMPILER".
+
 TOKENS
 
-ident = letter{letter|digit} EXCEPT KEYWORDS.
-string = comillas stringletter{stringletter} comillas.
-
+ident = letter{letter|digit}['.'] EXCEPT KEYWORDS.
+string = comillas stringletter{stringletter} comillas['.'].
 char = "'"["/"]letter"'".
-charnumber = "CHR("digit{digit}")".
-charinterval = "CHR("digit{digit}")""..""CHR("digit{digit}")".
+charnumber = "CHR("digit{digit}")"['.'].
+charinterval = "CHR("digit{digit}")""..""CHR("digit{digit}")"['.'].
+kleenegroup = "{"MyANY{MyANY}"}".
+bracketgroup = "["MyANY{MyANY}"]".
 
 nontoken = MyANY.
 startcode ="(.".

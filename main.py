@@ -50,8 +50,8 @@ if __name__ == "__main__":
     tokens = parser.ToSingleExpression()
     tree = parser.Parse(tokens)
 
-    print('\n\n', '='*20, 'ARBOL SINTÁCTICO', '='*20, '\n')
-    pprint(tree)
+    # print('\n\n', '='*20, 'ARBOL SINTÁCTICO', '='*20, '\n')
+    # pprint(tree)
     # print(tokens)
 
     # Direct DFA

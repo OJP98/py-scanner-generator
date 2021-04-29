@@ -65,7 +65,8 @@ class CodeGen(object):
                     f'if token_type == "{token.ident}" and token_val in aut.keywords_value:', 3)
                 self.WriteLine(
                     f'keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))', 4)
-                self.WriteLine('token_type = f"KEYWORD: {keyword}"', 4)
+                self.WriteLine(
+                    'token_type = f"KEYWORD: {keyword.value.value}"', 4)
 
         self.WriteLine('else:', 2)
         self.WriteLine('token_type = "None"', 3, 2)
@@ -91,7 +92,8 @@ class CodeGen(object):
     def WriteReadFileFunction(self):
         self.NewMethod('ReadFile', 'file_dir')
         self.WriteLine('try:', 1)
-        self.WriteLine('curr_file = open(file_dir, "r")', 2)
+        self.WriteLine(
+            'curr_file = open(file_dir, "r", encoding="latin-1")', 2)
         self.WriteLine('except:', 1)
         self.WriteLine('print("ERR: File not found!")', 2)
         self.WriteLine('exit()', 2)

@@ -5,7 +5,7 @@ global aut
 
 def ReadFile(file_dir):
     try:
-        curr_file = open(file_dir, "r")
+        curr_file = open(file_dir, "r", encoding="latin-1")
     except:
         print("ERR: File not found!")
         exit()
@@ -37,10 +37,10 @@ def EvalFile(chars):
             token_type = token.value.split("#-")[1]
             if token_type == "ident" and token_val in aut.keywords_value:
                 keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))
-                token_type = f"KEYWORD: {keyword}"
+                token_type = f"KEYWORD: {keyword.value.value}"
             if token_type == "hexnumber" and token_val in aut.keywords_value:
                 keyword = next(filter(lambda x: x.value.value == token_val, aut.keywords))
-                token_type = f"KEYWORD: {keyword}"
+                token_type = f"KEYWORD: {keyword.value.value}"
         else:
             token_type = "None"
 

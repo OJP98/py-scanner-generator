@@ -2,7 +2,7 @@ COMPILER Aritmetica
 
 CHARACTERS 
 
-letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz". 
+letter = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz". 
 digit = "0123456789" .
 tab = CHR(9).
 eol = CHR(10).
